@@ -435,6 +435,8 @@ CacheConnection <- R6::R6Class(
     #' @param value A `cd_data` object.
     set_adjusted_data = function(value) {
       check_cd_data(value)
+      private$.has_changed <<- TRUE
+      private$trigger('adjusted_data')
       private$.adjusted_data <- value
     },
 
