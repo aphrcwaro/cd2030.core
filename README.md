@@ -25,7 +25,7 @@ You can install a stable version of cd2030 from
 [GitHub](https://github.com/) with:
 
 ``` r
-devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.2")
+devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.3")
 ```
 
 ## Development version
