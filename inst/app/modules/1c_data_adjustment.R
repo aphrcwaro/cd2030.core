@@ -129,6 +129,7 @@ dataAdjustmentServer <- function(id, cache, i18n) {
       observeEvent(input$adjust_data, {
         req(data())
         cache()$set_adjusted_flag(FALSE)
+        messageBox$update_message('msg_adjusting', 'info')
         dt <- data() %>%
           adjust_service_data(adjustment = 'custom', k_factors = k_factors())
         cache()$set_adjusted_data(dt)
