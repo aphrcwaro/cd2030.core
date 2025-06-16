@@ -117,11 +117,18 @@ dataAdjustmentServer <- function(id, cache, i18n) {
         updateSelectInput(session, 'k_opd', selected = as.character(unname(k['opd'])))
         updateSelectInput(session, 'k_ipd', selected = as.character(unname(k['ipd'])))
 
+        if (cache()$adjusted_flag) {
+          dt <- data() %>%
+            adjust_service_data(adjustment = 'custom', k_factors = k_factors())
+          cache()$set_adjusted_data(dt)
+        }
+
         state$loaded <- TRUE
       })
 
       observeEvent(input$adjust_data, {
         req(data())
+        cache()$set_adjusted_flag(FALSE)
         messageBox$update_message('msg_adjusting', 'info')
         dt <- data() %>%
           adjust_service_data(adjustment = 'custom', k_factors = k_factors())
