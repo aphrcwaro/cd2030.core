@@ -58,10 +58,6 @@ surveySetupServer <- function(id, cache, i18n) {
                      input$ideliv_prop, input$lbw_prop, input$csection_prop), {
         req(cache())
 
-        if (!is.null(cache()$survey_source) && cache()$survey_source == 'ratios') {
-          return()
-        }
-
         estimates <- cache()$survey_estimates
         new_estimates <- c(
           anc1 = unname(estimates['anc1']),
@@ -87,13 +83,6 @@ surveySetupServer <- function(id, cache, i18n) {
       observe({
         req(cache())
         survey_year <- cache()$survey_year
-        # max_year <- robust_max(cache()$countdown_data$year)
-        #
-        # if (is.null(survey_year)) {
-        #   cache()$set_survey_year(max_year)
-        # }
-        #
-        # value_year <- min(c(survey_year, max_year), na.rm = TRUE)
         updateNumericInput(session, 'survey_year', value = survey_year)
       })
 
