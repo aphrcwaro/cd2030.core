@@ -437,6 +437,7 @@ CacheConnection <- R6::R6Class(
       check_cd_data(value)
       private$.adjusted_data <<- value
       private$.has_changed <<- TRUE
+      self$set_adjusted_flag(TRUE)
       private$trigger('adjusted_data')
     },
 
