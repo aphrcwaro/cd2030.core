@@ -53,7 +53,7 @@ plot.cd_health_system_comparison <- function(x,
       y = 'ad1_ratio_bed_pop',
       x_label = 'Number of Under-5 IPD Admission per 100 children per year',
       y_label = "Number of hospital beds per 10,000 population",
-      title = 'Under-5 IPD Admissiong by hospital beds density by admin level 1',
+      title = 'Under-5 IPD Admission by hospital beds density by admin level 1',
       caption = NULL
     )
   )
@@ -64,7 +64,7 @@ plot.cd_health_system_comparison <- function(x,
 
   x %>%
     ggplot(aes(x = !!sym(labels_prop$x), y = !!sym(labels_prop$y))) +
-      geom_point(aes(colour = 'District'), size = 2) +
+      geom_point(aes(colour = 'Admin1 units'), size = 2) +
       geom_smooth(aes(colour = 'Linear fit'), method = "lm", se = FALSE, formula = y ~ x) +
       # geom_abline(aes(slope = 1, intercept = 0, colour = 'Diagonale'), linetype = "dashed", show.legend = TRUE) +
       # geom_text(aes(label = !!sym(label), size = 1, color = "#045a8d", hjust = -0.1, vjust = -0.1)) +
