@@ -8,11 +8,6 @@ output:
     highlight: kate
   officedown::rdocx_document:
     reference_docx: subnational-one-pager-template.docx
-    page_size:
-      height: 8.3
-      width: 11.7
-      orient: "landscape"
-      unit: "in"
     page_margins:
       bottom: 0.1
       top: 0.1
@@ -21,6 +16,11 @@ output:
       gutter: 0
       header: 0
       footer: 0
+    page_size:
+      height: 8.3
+      width: 11.7
+      orient: "landscape"
+      unit: "in"
   pdf_document:
     toc: false
     latex_engine: lualatex

@@ -620,6 +620,7 @@ CacheConnection <- R6::R6Class(
     #' @field adjusted_data Gets adjusted data.
     adjusted_data = function(value) {
       if (missing(value)) {
+        private$depend('adjusted_data')
         if (self$adjusted_flag && !is.null(private$.adjusted_data)) {
           return(private$.adjusted_data)
         }
