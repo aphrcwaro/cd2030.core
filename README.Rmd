@@ -31,13 +31,12 @@ R package so you can use some features in the code directly.
 - Interactive visualizations for quick insights.
 
 ## Installation
-<!--
 You can install a stable version of cd2030 from [GitHub](https://github.com/) with:
 
 ```{r}
-devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.0")
+devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.2")
 ```
--->
+
 ## Development version
 
 To get a bug fix or to use a feature from the development version, you can install

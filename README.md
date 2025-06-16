@@ -9,33 +9,29 @@
 
 ## Introduction
 
-This is a web app for analysing health facility data from the DHIS 2 database using the Countdown 2030 analytical approach.
-The app also integrates analysis using the household surveys (DHS, MICS)
-It’s also an R package, so you can use some features in the code
+This is a web app for analysing vaccine data for the Countdown 2030.
+It’s also an R package so you can use some features in the code
 directly.
 
 ## Features
 
-- Data quality assessment.
-- Countdown 2030 analytical approach.
-- Routine facility and survey data analysis integration
+- Analyze vaccine data for Countdown 2030.
 - Use as an R package for programmatic access.
 - Interactive visualizations for quick insights.
 
 ## Installation
 
-<!--
-You can install a stable version of cd2030 app from [GitHub](https://github.com/) with:
-&#10;
+You can install a stable version of cd2030 from
+[GitHub](https://github.com/) with:
+
 ``` r
-devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.0")
+devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.2")
 ```
--->
 
 ## Development version
 
 To get a bug fix or to use a feature from the development version, you
-can install the development version of cd2030 app.
+can install the development version of cd2030.
 
 ``` r
 devtools::install_github("aphrcwaro/cd2030.rmncah")
@@ -52,7 +48,7 @@ dashboard()
 
 ## Example Usage
 
-Analyze DHIS 2 data programmatically:
+Analyze vaccine data programmatically:
 
 ``` r
 data <- load_excel_data("/path/to/hfd/data.xlsx")
