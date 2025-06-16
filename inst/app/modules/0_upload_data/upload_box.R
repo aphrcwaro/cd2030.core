@@ -86,7 +86,7 @@ uploadBoxServer <- function(id, i18n) {
         filename = reactive('master_dataset'),
         extension = reactive('dta'),
         i18n = i18n,
-        content = function(file) {
+        content = function(file, data) {
           haven::write_dta(cache()$countdown_data, file)
         },
         data = cache,
