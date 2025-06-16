@@ -121,20 +121,16 @@ dataAdjustmentServer <- function(id, cache, i18n) {
       })
 
       observeEvent(input$adjust_data, {
-        req(cache())
+        req(data())
         messageBox$update_message('msg_adjusting', 'info')
-        cache()$set_adjusted_flag(FALSE)
-        cache()$set_adjusted_flag(TRUE)
+        dt <- data() %>%
+          adjust_service_data(adjustment = 'custom', k_factors = k_factors())
+        cache()$set_adjusted_data(dt)
       })
 
-      observeEvent(cache()$adjusted_flag, {
-        req(data())
+      observe({
+        req(cache())
         if (cache()$adjusted_flag) {
-          dt <- data() %>%
-            adjust_service_data(adjustment = 'custom', k_factors = k_factors())
-
-          cache()$set_adjusted_data(dt)
-
           messageBox$update_message('msg_data_adjusted', 'success')
         } else {
           messageBox$update_message('msg_dataset_not_adjusted', 'info')
