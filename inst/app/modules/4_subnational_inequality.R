@@ -86,7 +86,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
 
       downloadCoverageServer(
         id = 'anc4',
-        filename = reactive(paste0('anc4_', admin_level(), '_inequality_', cache()$get_denominator('anc4'))),
+        filename = reactive(paste0('anc4_admin_level_inequality_', cache()$get_denominator('anc4'))),
         data_fn = anc4_inequality,
         i18n = i18n,
         sheet_name = reactive(i18n$t("title_anc4_inequality"))
@@ -94,7 +94,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
 
       downloadCoverageServer(
         id = 'ideliv',
-        filename = reactive(paste0('ideliv_', admin_level(), '_inequality_', cache()$get_denominator('instdeliveries'))),
+        filename = reactive(paste0('ideliv_admin_level_inequality_', cache()$get_denominator('instdeliveries'))),
         data_fn = ideliv_inequality,
         i18n = i18n,
         sheet_name = reactive(i18n$t("title_ideliv_inequality"))
@@ -102,7 +102,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
 
       downloadCoverageServer(
         id = 'lbw',
-        filename = reactive(paste0('lbw_', admin_level(), '_inequality_', cache()$get_denominator('low_bweight'))),
+        filename = reactive(paste0('lbw_admin_level_inequality_', cache()$get_denominator('low_bweight'))),
         data_fn = lbw_inequality,
         i18n = i18n,
         sheet_name = reactive(i18n$t("title_lbw_inequality"))
@@ -110,7 +110,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
 
       downloadCoverageServer(
         id = 'measles1',
-        filename = reactive(paste0('measles1_', admin_level(), '_inequality_', cache()$get_denominator('measles1'))),
+        filename = reactive(paste0('measles1_admin_level_inequality_', cache()$get_denominator('measles1'))),
         data_fn = measles1_inequality,
         i18n = i18n,
         sheet_name = reactive(i18n$t("title_mcv1_inequality"))
@@ -118,7 +118,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
 
       downloadCoverageServer(
         id = 'penta1',
-        filename = reactive(paste0('penta1', admin_level(), '_inequality_', cache()$get_denominator('penta1'))),
+        filename = reactive(paste0('penta1admin_level_inequality_', cache()$get_denominator('penta1'))),
         data_fn = penta1_inequality,
         i18n = i18n,
         sheet_name = reactive(i18n$t("title_penta1_inequality"))
@@ -126,7 +126,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
 
       downloadCoverageServer(
         id = 'custom',
-        filename = reactive(paste0(input$indicator, '_', admin_level(), '_inequality_', cache()$get_denominator(input$indicator))),
+        filename = reactive(paste0(input$indicator, '_admin_level_inequality_', cache()$get_denominator(input$indicator))),
         data_fn = custom_inequality,
         i18n = i18n,
         sheet_name = reactive(paste0(input$indicator, ' Inequality'))
