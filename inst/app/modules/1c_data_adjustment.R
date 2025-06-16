@@ -80,13 +80,8 @@ dataAdjustmentServer <- function(id, cache, i18n) {
       })
 
       modified_data <- reactive({
-        req(cache())
+        req(cache(), cache()$adjusted_flag)
         cache()$adjusted_data
-      })
-
-      adjusted_flag <- reactive({
-        req(cache())
-        cache()$adjusted_flag
       })
 
       k_factors <- reactive({
@@ -132,9 +127,9 @@ dataAdjustmentServer <- function(id, cache, i18n) {
         cache()$set_adjusted_flag(TRUE)
       })
 
-      observeEvent(adjusted_flag(), {
+      observeEvent(cache()$adjusted_flag, {
         req(data())
-        if (adjusted_flag()) {
+        if (cache()$adjusted_flag) {
           dt <- data() %>%
             adjust_service_data(adjustment = 'custom', k_factors = k_factors())
 
@@ -151,10 +146,10 @@ dataAdjustmentServer <- function(id, cache, i18n) {
         filename = reactive('master_adj_dataset'),
         extension = reactive('dta'),
         i18n = i18n,
-        content = function(file) {
-          haven::write_dta(modified_data(), file)
+        content = function(file, data) {
+          haven::write_dta(data, file)
         },
-        data = adjusted_flag,
+        data = modified_data,
         label = "btn_download_adjusted_dataset"
       )
 
