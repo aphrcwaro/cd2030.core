@@ -626,7 +626,10 @@ CacheConnection <- R6::R6Class(
         }
         return(NULL)
       }
+
       check_cd_data(value)
+      private$.has_changed <<- TRUE
+      private$trigger(field_name)
       private$.adjusted_data <- value
     },
 
