@@ -34,7 +34,7 @@ R package so you can use some features in the code directly.
 You can install a stable version of cd2030 from [GitHub](https://github.com/) with:
 
 ```{r}
-devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.3")
+devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.4")
 ```
 
 ## Development version
