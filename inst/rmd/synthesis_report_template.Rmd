@@ -1,16 +1,11 @@
 ---
 title: "`r params$country`"
 output: 
-  html_document:
-    toc: true
-    toc_float: true
-    theme: cerulean
-    highlight: kate
   officedown::rdocx_document:
     reference_docx: synthesis-template.docx
     page_size:
-      height: 22.0
       width: 13.93
+      height: 22.0
       orient: "portrait"
       unit: "in"
     page_margins:
@@ -21,9 +16,6 @@ output:
       gutter: 0
       header: 0
       footer: 0
-  pdf_document:
-    toc: false
-    latex_engine: lualatex
 params:
   cache: NULL
   adminlevel_1: NULL
@@ -177,7 +169,7 @@ run_columnbreak()
 ```{r, fig.width=4.2}
 indicator_coverage <- cache$calculate_indicator_coverage('national')
 indicator_coverage %>% 
-  filter_indicator_coverage('instdeliveries', unname(survey_estimates['ideliv'])) %>% 
+  filter_indicator_coverage('instdeliveries', unname(survey_estimates['ideliv']), cache$survey_year) %>% 
   plot() +
   cd_report_theme()
 run_columnbreak()
@@ -185,7 +177,7 @@ run_columnbreak()
 **Penta 3**
 ```{r, fig.width=4.2}
 indicator_coverage %>% 
-  filter_indicator_coverage('penta3', unname(survey_estimates['penta3'])) %>% 
+  filter_indicator_coverage('penta3', unname(survey_estimates['penta3']), cache$survey_year) %>% 
   plot() +
   cd_report_theme()
 ```

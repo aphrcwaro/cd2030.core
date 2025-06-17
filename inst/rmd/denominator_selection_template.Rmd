@@ -97,7 +97,7 @@ The best performing denominator for coverage analysis with facility data is sele
 indicator_coverage <- cache$calculate_indicator_coverage('national')
 
 indicator_coverage %>% 
-  filter_indicator_coverage('penta3', unname(survey_estimates['penta3'])) %>% 
+  filter_indicator_coverage('penta3', unname(survey_estimates['penta3']), cache$survey_year) %>% 
   plot() +
   cd_report_theme()
 
@@ -108,7 +108,7 @@ indicator_coverage %>%
 
 ```{r}
 indicator_coverage %>% 
-  filter_indicator_coverage('instdeliveries', unname(survey_estimates['ideliv'])) %>% 
+  filter_indicator_coverage('instdeliveries', unname(survey_estimates['ideliv']), cache$survey_year) %>% 
   plot() +
   cd_report_theme()
 ```
