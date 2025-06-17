@@ -56,7 +56,7 @@ calculateRatiosServer <- function(id, cache, i18n) {
         req(cache())
 
         estimates <- survey_estimates()
-        if (is.null(cache()$survey_source) || cache()$survey_source == 'setup') {
+        if (is.na(cache()$survey_source) || cache()$survey_source == 'setup') {
           updateNumericInput(session, 'anc1_coverage', value = unname(estimates["anc1"]))
           updateNumericInput(session, 'penta1_coverage', value = unname(estimates["penta1"]))
           updateNumericInput(session, 'penta3_coverage', value = unname(estimates["penta3"]))
@@ -66,10 +66,6 @@ calculateRatiosServer <- function(id, cache, i18n) {
       # Causing a loop the national_rates.R
       observeEvent(c(input$anc1_coverage, input$penta1_coverage, input$penta3_coverage), {
         req(cache())
-
-        if (!is.null(cache()$survey_source) && cache()$survey_source == 'setup') {
-          return()
-        }
 
         estimates <- cache()$survey_estimates
         estimates <- c(

@@ -258,14 +258,14 @@ coverage %>%
 
 ```{r, fig.width=6.3, fig.height=3}
 coverage %>%
-  filter_coverage('instdeliveries', denominator = cache$get_denominator('instdeliveries')) %>% 
+  filter_coverage('penta3', denominator = cache$get_denominator('penta3')) %>% 
   plot() +
   cd_report_theme()
 ```
 
 ```{r, fig.width=6.3, fig.height=3}
 coverage %>%
-  filter_coverage('instdeliveries', denominator = cache$get_denominator('instdeliveries')) %>% 
+  filter_coverage('measles1', denominator = cache$get_denominator('measles1')) %>% 
   plot() +
   cd_report_theme()
 

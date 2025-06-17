@@ -96,7 +96,7 @@ CacheConnection <- R6::R6Class(
       private$.in_memory_data <- private$.data_template
       private$.in_memory_data$countdown_data <- countdown_data
       private$.in_memory_data$rds_path <- rds_path
-      private$.in_memory_data$survey_source <- NULL
+      private$.in_memory_data$survey_source <- NA
 
       if (!is.null(rds_path)) {
         self$load_from_disk()
@@ -124,6 +124,7 @@ CacheConnection <- R6::R6Class(
     #' @return None. Updates file.
     save_to_disk = function() {
       if (private$.has_changed && !is.null(private$.in_memory_data$rds_path)) { # Key change here
+        private$.in_memory_data$survey_source <- NA
         saveRDS(private$.in_memory_data, private$.in_memory_data$rds_path)
         private$.has_changed <- FALSE
       }
@@ -847,7 +848,7 @@ CacheConnection <- R6::R6Class(
       survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, measles1 = NA, bcg = NA, anc4 = NA, ideliv = NA, lbw = NA, csection = NA),
       national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
       start_survey_year = NULL,
-      survey_source = NULL,
+      survey_source = NA,
       denominator = 'penta1',
       maternal_denominator = 'anc1',
       selected_admin_level_1 = NULL,
