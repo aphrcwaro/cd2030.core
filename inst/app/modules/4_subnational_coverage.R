@@ -82,7 +82,7 @@ subnationalCoverageServer <- function(id, cache, i18n) {
       })
 
       custom_coverage <- reactive({
-        req(coverage())
+        req(coverage(), input$indicator)
         coverage() %>%
           filter_coverage(input$indicator, denominator = cache()$get_denominator(input$indicator), region = region())
       })
