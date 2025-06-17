@@ -129,6 +129,11 @@ filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88, su
     cd_abort(c("x" = "A scalar numeric is required."))
   }
 
+  min_year <- min(.data$year)
+  if (min_year > survey_year) {
+    survey_year <- min_year
+  }
+
   # Prepare the data for plotting
   data <- .data %>%
     pivot_longer(-any_of(c("country", "year", "iso3"))) %>%

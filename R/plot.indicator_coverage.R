@@ -259,7 +259,7 @@ plot.cd_indicator_coverage_filtered <- function(x, ...) {
   indicator_name <- unique(x$indicator_name)
   indicator_name <- switch (
     indicator_name,
-    instdeliveries = 'Institutional Devliery',
+    instdeliveries = 'Institutional Delivery',
     anc4 = 'ANC 4',
     low_bweight = 'Low Birth Weight',
     penta3 = 'Penta 3',
