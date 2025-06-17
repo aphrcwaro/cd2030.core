@@ -38,6 +38,10 @@ reportButtonServer <- function(id, cache, report_name, i18n, adminlevel_1) {
                'html_document' = 'html')
       })
 
+      observe({
+        print(adminlevel_1())
+      })
+
       observeEvent(input$generate_report, {
         req(cache())
 

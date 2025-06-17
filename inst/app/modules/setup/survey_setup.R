@@ -43,7 +43,7 @@ surveySetupServer <- function(id, cache, i18n) {
         req(cache())
         estimates <- cache()$survey_estimates
 
-        if (is.null(cache()$survey_source) || cache()$survey_source == 'ratios') {
+        if (is.na(cache()$survey_source) || cache()$survey_source == 'ratios') {
           updateNumericInput(session, 'penta3_prop', value = unname(estimates['penta3']))
         }
         updateNumericInput(session, 'measles1_prop', value = unname(estimates['measles1']))

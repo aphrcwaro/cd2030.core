@@ -120,7 +120,7 @@ plot(comparison, indicator = 'ratio_opd_u5_hstaff') +
 ```
 
 ```{r}
-plot(comparison, indicator = 'ratio_opd_u5_hos') +
+plot(comparison, indicator = 'ratio_ipd_u5_hos') +
   cd_report_theme()
 ```
 

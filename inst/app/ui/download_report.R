@@ -86,7 +86,16 @@ downloadReportServer <- function(id, cache, i18n) {
         }
       })
 
-      reportButtonServer('report', cache, report_name, i18n, reactive(input$adminlevel_1))
+      admin_level <- reactive({
+        req(input$type)
+        if (input$type == 'synthesis_report') {
+          NULL
+        } else {
+          input$adminlevel_1
+        }
+      })
+
+      reportButtonServer('report', cache, report_name, i18n, admin_level)
     }
   )
 }
