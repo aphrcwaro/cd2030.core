@@ -34,8 +34,8 @@ pacman::p_load(
   stringr ,
   officer,
   officedown,
-  waiter
-  # update = TRUE
+  waiter,
+  update = FALSE
 )
 
 source('modules/page_objects_config.R')

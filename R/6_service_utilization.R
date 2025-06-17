@@ -219,7 +219,7 @@ get_excel_version <- function(.data) {
     "mean_opd_total"      = "Mean OPD visits per person per year, all ages",
     "mean_ipd_total"      = "Mean IPD admissions per 100 persons per year, all ages",
     "opd_rr"              = "Completeness reporting OPD",
-    "opd_total"           = "N of OPD visits per year, all ages",
+    "opd_total"           = "N of OPD visits per year, 5+",
     "opd_under5"          = "N of OPD visits per year, under-5",
     "mean_opd_under5"     = "Mean OPD visits per child per year, under-5",
     "perc_opd_under5"     = "Percent of OPD visits that are under-5",

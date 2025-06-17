@@ -177,7 +177,7 @@ run_columnbreak()
 ```{r, fig.width=4.2}
 indicator_coverage <- cache$calculate_indicator_coverage('national')
 indicator_coverage %>% 
-  filter_indicator_coverage('instdeliveries', unname(survey_estimates['ideliv'])) %>% 
+  filter_indicator_coverage('instdeliveries', unname(survey_estimates['ideliv']), cache$survey_year) %>% 
   plot() +
   cd_report_theme()
 run_columnbreak()
@@ -185,7 +185,7 @@ run_columnbreak()
 **Penta 3**
 ```{r, fig.width=4.2}
 indicator_coverage %>% 
-  filter_indicator_coverage('penta3', unname(survey_estimates['penta3'])) %>% 
+  filter_indicator_coverage('penta3', unname(survey_estimates['penta3']), cache$survey_year) %>% 
   plot() +
   cd_report_theme()
 ```

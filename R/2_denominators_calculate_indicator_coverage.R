@@ -121,15 +121,13 @@ calculate_indicator_coverage <- function(.data,
 #' @seealso [plot.cd_indicator_coverage_filtered()]
 #'
 #' @export
-filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88) {
+filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88, survey_year = 2024) {
   check_cd_indicator_coverage(.data)
   indicator <- arg_match(indicator, get_indicator_without_opd_ipd())
 
   if (!is_scalar_double(survey_coverage)) {
     cd_abort(c("x" = "A scalar numeric is required."))
   }
-
-  max_year <- robust_max(.data$year, 2024)
 
   # Prepare the data for plotting
   data <- .data %>%
@@ -145,7 +143,7 @@ filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88) {
       category = factor(category, levels = c("DHIS2 projection", "ANC1-derived", "Penta1-derived", "UN projection", "Penta 1 population Growth")),
       indicator_name = str_extract(name, "(?<=cov_)(.*)(?=_[^_]+$)")
     ) %>%
-    filter(year == max_year, indicator_name == indicator)
+    filter(year == survey_year, indicator_name == indicator)
 
   new_tibble(
     data,

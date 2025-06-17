@@ -49,45 +49,45 @@ denominatorSelectionServer <- function(id, cache, i18n) {
       })
 
       anc4_coverage <- reactive({
-        req(indicator_coverage())
+        req(indicator_coverage(), cache()$survey_year)
         anc4_rate <- unname(survey_estimates()['anc4'])
         indicator_coverage() %>%
-          filter_indicator_coverage('anc4', anc4_rate)
+          filter_indicator_coverage('anc4', anc4_rate, cache()$survey_year)
       })
 
       ideliv_coverage <- reactive({
-        req(indicator_coverage())
+        req(indicator_coverage(), cache()$survey_year)
         ideliv_rate <- unname(survey_estimates()['ideliv'])
         indicator_coverage() %>%
-          filter_indicator_coverage('instdeliveries', ideliv_rate)
+          filter_indicator_coverage('instdeliveries', ideliv_rate, cache()$survey_year)
       })
 
       lbw_coverage <- reactive({
-        req(indicator_coverage())
+        req(indicator_coverage(), cache()$survey_year)
         lbw_rate <- unname(survey_estimates()['lbw'])
         indicator_coverage() %>%
-          filter_indicator_coverage('low_bweight', lbw_rate)
+          filter_indicator_coverage('low_bweight', lbw_rate, cache()$survey_year)
       })
 
       penta3_coverage <- reactive({
-        req(indicator_coverage())
+        req(indicator_coverage(), cache()$survey_year)
         penta3_rate <- unname(survey_estimates()['penta3'])
         indicator_coverage() %>%
-          filter_indicator_coverage('penta3', penta3_rate)
+          filter_indicator_coverage('penta3', penta3_rate, cache()$survey_year)
       })
 
       measles1_coverage <- reactive({
-        req(indicator_coverage())
+        req(indicator_coverage(), cache()$survey_year)
         measles1_rate <- unname(survey_estimates()['measles1'])
         indicator_coverage() %>%
-          filter_indicator_coverage('measles1', measles1_rate)
+          filter_indicator_coverage('measles1', measles1_rate, cache()$survey_year)
       })
 
       bcg_coverage <- reactive({
-        req(indicator_coverage())
+        req(indicator_coverage(), cache()$survey_year)
         bcg_rate <- unname(survey_estimates()['bcg'])
         indicator_coverage() %>%
-          filter_indicator_coverage('bcg', bcg_rate)
+          filter_indicator_coverage('bcg', bcg_rate, cache()$survey_year)
       })
 
       downloadCoverageServer(
