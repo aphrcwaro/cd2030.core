@@ -57,7 +57,7 @@ library(officer)
 cache <- params$cache
 adminlevel_1 <- params$adminlevel_1
 
-threshold <- cache$threshold
+threshold <- cache$performance_threshold
 data <- cache$countdown_data
 country <- cache$country
 last_year <- robust_max(data$year)
@@ -83,8 +83,8 @@ plot_subnational_comparison <- function(.data, indicator = c('penta3', 'instdeli
     arrange(!!indicator_col) %>% 
     mutate(
       category = case_when(
-        !!indicator_col <= quantile(!!indicator_col, 0.33) ~ "Lower than average",
-        !!indicator_col <= quantile(!!indicator_col, 0.66) ~ "Average",
+        !!indicator_col <= quantile(!!indicator_col, 0.33, na.rm = TRUE) ~ "Lower than average",
+        !!indicator_col <= quantile(!!indicator_col, 0.66, na.rm = TRUE) ~ "Average",
         TRUE ~ "Higher than average"
       )
     ) 
@@ -212,7 +212,7 @@ years <- unique(data$year)
 
 data %>%
 	calculate_overall_score(threshold, region = adminlevel_1) %>%
-   filter(!no %in% c('3a', '3b')) %>%
+  filter(!no %in% c('3a', '3b')) %>%
 	mutate(
 		type = case_when(
 			no %in% c("1a", "1b", "1c") ~ '1. Completeness of monthly facility reporting',
@@ -236,29 +236,32 @@ data %>%
   fontsize(part = 'header', size = 9) %>%
 	bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
 	bold(i = ~ is.na(type) & no =='4', bold = TRUE, part = "body") %>%
-	colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), digits = 0, big.mark = ",") %>%
-	colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years), digits = 2) %>%
-	# bg(
-	# 	i = ~ is.na(type) & !no %in% c("3a", "3b"),
-	# 	j = as.character(years),
-	# 	bg = function(x) {
-	# 		case_when(
-	# 		  is.na(x) | is.null(x) ~ "transparent",
-	# 		  x >= threshold ~ "seagreen",
-	# 		  x >= 70 & x < threshold ~ "yellow",
-	# 		  x < 70 ~ "red",
-	# 		  .default = "transparent" # Default case for anything else
-	# 		 )
-	# 	},
-	# 	part = "body"
-	# ) %>%
+	colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years),
+	                 digits = 0, big.mark = ",") %>%
+	colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years),
+	                 digits = 2) %>%
+  bg(
+  	i = ~ is.na(type) & !no %in% c("3a", "3b"),
+  	j = as.character(years),
+  	bg = function(x) {
+  		case_when(
+  		  is.na(x) | is.null(x) ~ "transparent",
+  		  x >= threshold ~ "seagreen",
+  		  x >= 70 & x < threshold ~ "yellow",
+  		  x < 70 ~ "red",
+  		  .default = "transparent" # Default case for anything else
+  		 )
+  	},
+  	part = "body"
+  ) %>%
 	bg(
-		i = ~ !is.na(type), part = "body",
+		i = ~ !is.na(type), 
+		part = "body",
 		bg = 'lightgoldenrodyellow'
 	) %>%
-  fontsize(size = 9, part = 'body') %>% 
+  fontsize(size = 9, part = 'body') %>%
 	theme_vanilla() %>%
-	autofit() %>% 
+	autofit() %>%
   fit_to_width(max_width = 3.6)
 
 run_columnbreak()

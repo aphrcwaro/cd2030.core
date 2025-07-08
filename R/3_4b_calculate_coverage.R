@@ -90,8 +90,14 @@ calculate_coverage <- function(.data,
 
   # Join and Transform data
   combined_data <- dhis2_data %>%
-    full_join(survey_data, by = admin_level_c, relationship = "many-to-many") %>%
-    left_join(wuenic_data, by = "year") %>%
+    full_join(survey_data, by = admin_level_c, relationship = "many-to-many")
+
+  if (admin_level == 'national') {
+    combined_data <- combined_data %>%
+      left_join(wuenic_data, by = "year")
+  }
+
+  combined_data <- combined_data %>%
     filter(if (is.null(region)) TRUE else adminlevel_1 == region) %>%
     select(-any_of(c("admin_level_1")))
 
@@ -215,13 +221,13 @@ validate_column_existence <- function(.data, column) {
 join_subnational_map <- function(.data, admin_level, map) {
   # admin_level_argument will be used once the district column is introduce in survey
 
-  adminlevel_1 <- admin_level_1 <- NULL
+  adminlevel_1 = admin_level_1 = NULL
 
   if (admin_level != "national") {
     if (!is.null(map)) {
       .data <- .data %>%
-        # left_join(map, by = admin_level) %>%
         left_join(map, join_by(adminlevel_1)) %>%
+        filter(!is.na(admin_level_1)) %>%
         select(-adminlevel_1) %>%
         rename(adminlevel_1 = admin_level_1)
     }
