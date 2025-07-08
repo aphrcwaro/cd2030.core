@@ -36,8 +36,8 @@ calculate_overall_score <- function(.data,
                                     ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3")),
                                     region = NULL) {
 
-  year = mean_rr = low_mean_rr = mean_mis_vacc_tracer <- mean_out_vacc_tracer <-
-    value <- `Data Quality Metrics` <- value <- no <- NULL
+  year = mean_rr = low_mean_rr = mean_mis_vacc_tracer = mean_out_vacc_tracer =
+    value = `Data Quality Metrics` = value = no = NULL
 
   check_cd_data(.data)
 
