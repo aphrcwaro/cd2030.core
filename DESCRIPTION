@@ -1,6 +1,6 @@
 Package: cd2030.rmncah
 Title: Data Loading, Validation, and Reporting for Countdown 2030
-Version: 1.0.4.9000
+Version: 1.0.5.9000
 Authors@R: c(
       person("David", "Kariuki", , "hello@damurka.com", role = c("aut", "cre"), 
              comment = c(ORCID = "0009-0003-6159-1107")),
