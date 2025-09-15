@@ -109,7 +109,7 @@ is_maternal_indicator <- function(indicator) {
 #' @export
 get_indicator_groups <- function(group = get_selected_group()) {
   choices <- union(names(.cd2030_indicator_groups), names(.cd2030_state$overrides))
-  group <- arg_match0(group, choices = choices, multiple = FALSE)
+  group <- arg_match0(group, values = choices)
 
   out <- .cd2030_indicator_groups[[group]]
   ov  <- .cd2030_state$overrides[[group]]

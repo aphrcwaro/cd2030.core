@@ -38,8 +38,8 @@ plot.cd_coverage_filtered <- function(x, ...) {
     `95% CI LL` = `95% CI UL` = NULL
 
   admin_level <- attr_or_abort(x, "admin_level")
-  indicator <- attr_or_abort(x, 'indicator')
-  region <- attr_or_null(x, 'region')
+  # indicator <- attr_or_abort(x, 'indicator')
+  # region <- attr_or_null(x, 'region')
   denominator <- attr_or_abort(x, 'denominator')
 
   if (ncol(x) <= 1) {

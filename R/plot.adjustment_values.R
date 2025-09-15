@@ -43,14 +43,13 @@
 #'
 #' @import dplyr ggplot2 tidyr
 #' @export
-plot.cd_adjustment_values <- function(x,
-                                      indicator = NULL,
-                                      title = NULL,
-                                      legend_labels = NULL,
-                                      ...) {
+plot.cd_adjustment_values_filtered <- function(x,
+                                               title = NULL,
+                                               legend_labels = NULL,
+                                               ...) {
   year = perc_diff = type = value = NULL
 
-  indicator <- arg_match(indicator, get_all_indicators())
+  indicator <- attr_or_abort(x, 'indicator')
 
   # Set default title if not provided
   if (is.null(title)) {
@@ -66,24 +65,15 @@ plot.cd_adjustment_values <- function(x,
   }
 
   # Prepare data with absolute and percentage difference columns
-  plot_data <- x %>%
-    select(year, starts_with(indicator)) %>%
-    mutate(
-      # Calculate the difference and percentage difference
-      diff = get(paste0(indicator, "_adj")) - get(paste0(indicator, "_raw")),
-      perc_diff = (diff / get(paste0(indicator, "_raw"))) * 100
-    ) %>%
-    select(-diff, -perc_diff) %>%
+  x %>%
     pivot_longer(-year, names_to = "type", values_to = "value") %>%
     mutate(
       type = factor(type,
         levels = c(paste0(indicator, "_raw"), paste0(indicator, "_adj")),
         labels = legend_labels
       )
-    )
-
-  # Plot
-  ggplot(plot_data, aes(x = year, y = value, fill = type)) +
+    ) %>%
+    ggplot(aes(x = year, y = value, fill = type)) +
     geom_col(position = "dodge") +
     labs(
       title = title,

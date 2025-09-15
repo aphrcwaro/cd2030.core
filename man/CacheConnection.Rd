@@ -115,6 +115,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-load_from_disk}{\code{CacheConnection$load_from_disk()}}
 \item \href{#method-CacheConnection-save_to_disk}{\code{CacheConnection$save_to_disk()}}
 \item \href{#method-CacheConnection-append_page_note}{\code{CacheConnection$append_page_note()}}
+\item \href{#method-CacheConnection-adjust_data}{\code{CacheConnection$adjust_data()}}
 \item \href{#method-CacheConnection-get_notes}{\code{CacheConnection$get_notes()}}
 \item \href{#method-CacheConnection-calculate_indicator_coverage}{\code{CacheConnection$calculate_indicator_coverage()}}
 \item \href{#method-CacheConnection-calculate_inequality}{\code{CacheConnection$calculate_inequality()}}
@@ -249,6 +250,16 @@ Append a note to a page.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-adjust_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-adjust_data}{}}}
+\subsection{Method \code{adjust_data()}}{
+Adjusts data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$adjust_data()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_notes"></a>}}

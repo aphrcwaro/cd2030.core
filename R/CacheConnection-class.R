@@ -98,6 +98,8 @@ CacheConnection <- R6::R6Class(
       private$.in_memory_data$rds_path <- rds_path
       private$.in_memory_data$survey_source <- NA
 
+      print(private$.in_memory_data$rds_path)
+
       if (!is.null(rds_path)) {
         self$load_from_disk()
       }
@@ -108,15 +110,17 @@ CacheConnection <- R6::R6Class(
     load_from_disk = function() {
       check_file_path(private$.in_memory_data$rds_path)
 
-      loaded_data <- readRDS(private$.in_memory_data$rds_path)
-      required_fields <- names(private$.data_template)
-      missing_fields <- setdiff(required_fields, names(loaded_data))
-      if (length(missing_fields) > 0) {
-        cd_abort(c('x' = paste(
-          'The following required fields are missing in the RDS file:',
-          paste(missing_fields, collapse = ', ')
-        )))
-      }
+      rds_path <- private$.in_memory_data$rds_path
+      loaded_data <- readRDS(rds_path)
+      loaded_data$rds_path = rds_path
+      # required_fields <- names(private$.data_template)
+      # missing_fields <- setdiff(required_fields, names(loaded_data))
+      # if (length(missing_fields) > 0) {
+      #   cd_abort(c('x' = paste(
+      #     'The following required fields are missing in the RDS file:',
+      #     paste(missing_fields, collapse = ', ')
+      #   )))
+      # }
       private$.in_memory_data <- loaded_data
     },
 
@@ -170,6 +174,14 @@ CacheConnection <- R6::R6Class(
       # Mark data as changed and save to disk
       private$.has_changed <- TRUE
       self$save_to_disk()
+    },
+
+    #' @description Adjusts data.
+    adjust_data = function() {
+      self$set_adjusted_flag(FALSE)
+      data <- self$data_with_excluded_years %>%
+        adjust_service_data(adjustment = 'custom', k_factors = self$k_factors)
+      self$set_adjusted_data(data)
     },
 
     #' @description Retrieve notes for a given page/object.
@@ -453,7 +465,15 @@ CacheConnection <- R6::R6Class(
     #' @description Set K-factors.
     #' @param value Named numeric vector.
 
-    set_k_factors = function(value) private$setter('k_factors', value, ~ is.numeric(.x) && all(c('anc', 'idelv', 'vacc', 'opd', 'ipd') %in% names(.x))),
+    set_k_factors = function(value) {
+      vacc_factors <- c('anc', 'idelv', 'vacc')
+      factors <- if (get_selected_group() == 'vaccine') {
+        vacc_factors
+      } else {
+        c(vacc_factors, 'opd', 'ipd')
+      }
+      private$setter('k_factors', value, ~ is.numeric(.x) && all(factors %in% names(.x)))
+    },
 
     #' @description Set adjusted flag.
     #' @param value Logical scalar.
@@ -462,8 +482,14 @@ CacheConnection <- R6::R6Class(
     #' @description Set survey estimates.
     #' @param value Named numeric vector.
     set_survey_estimates = function(value) {
-      if (!is.numeric(value) || !all(c('anc1', 'anc4', 'penta1', 'penta3', 'measles1', 'bcg', 'ideliv', 'lbw', 'csection') %in% names(value))) {
-        cd_abort(c('x' = 'Survey must be a numeric vector containing {.val anc1}, {.val penta1} and {.val penta3}'))
+      vacc_factors <- c('anc1', 'penta1', 'penta3', 'measles1')
+      factors <- if (get_selected_group() == 'vaccine') {
+        vacc_factors
+      } else {
+        c(vacc_factors, 'anc4', 'ideliv', 'lbw', 'csection')
+      }
+      if (!is.numeric(value) || !all(factors %in% names(value))) {
+        cd_abort(c('x' = 'Survey must be a numeric vector containing {.val factors}'))
       }
       private$update_field('survey_estimates', value)
     },
@@ -917,15 +943,16 @@ CacheConnection <- R6::R6Class(
         } else if (rlang::is_function(validation_exp)) {
           validation_exp
         } else {
-          cd_abort(c('x' = '{.arg validation} must be a function or a formula.'))
+          cd_abort(c('x' = '{.arg {validation}} must be a function or a formula.'))
         }
       } else {
         function(x) TRUE
       }
       if (!validate_fn(value)) {
-        cd_abort(c('x' = 'Invalid value for field {.field field_name}.'))
+        cd_abort(c('x' = 'Invalid value for field {.field {field_name}}.'))
       }
       private$update_field(field_name, value)
+      self$save_to_disk()
     },
     depend = function(field_name) {
       if (!is.null(private$.reactiveDep[[field_name]])) {

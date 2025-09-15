@@ -75,3 +75,44 @@ generate_adjustment_values <- function(.data,
     class = "cd_adjustment_values"
   )
 }
+
+#' Filter one indicator’s adjustment values
+#'
+#' Keeps `year` and the two columns for a single indicator’s raw and adjusted
+#' values, e.g. `anc1_raw` and `anc1_adj`.
+#'
+#' @param .data A tibble of class `cd_adjustment_values`.
+#' @param indicator A single indicator name. Must be one of `get_all_indicators()`.
+#'
+#' @return A tibble with class `cd_adjustment_values_filtered` containing:
+#'   - `year`
+#'   - `<indicator>_raw`
+#'   - `<indicator>_adj`
+#'
+#' The result carries an attribute `indicator` with the selected indicator.
+#'
+#' @examples
+#' \dontrun{
+#' x <- filter_adjustment_value(adj_values, "anc1")
+#' attr(x, "indicator")   # "anc1"
+#' }
+#' @export
+filter_adjustment_value <- function(.data, indicator) {
+  check_cd_class(.data, 'cd_adjustment_values')
+  indicator <- arg_match(indicator, get_all_indicators())
+
+  data <- .data %>%
+    select(year, starts_with(indicator)) %>%
+    mutate(
+      # Calculate the difference and percentage difference
+      diff = get(paste0(indicator, "_adj")) - get(paste0(indicator, "_raw")),
+      perc_diff = (diff / get(paste0(indicator, "_raw"))) * 100
+    ) %>%
+    select(-diff, -perc_diff)
+
+  new_tibble(
+    data,
+    class = 'cd_adjustment_values_filtered',
+    indicator = indicator
+  )
+}
