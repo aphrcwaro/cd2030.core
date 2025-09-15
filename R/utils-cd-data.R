@@ -83,6 +83,23 @@ is_maternal_indicator <- function(indicator) {
   indicator %in% c(groups$anc, groups$idelv)
 }
 
+.cd2030_indicator_groups <- list(
+  vaccine = list(
+    anc   = c("anc1"),
+    idelv = c("ideliv","instlivebirths"),
+    vacc  = c("bcg","ipv1","ipv2","measles1","measles2","opv1","opv2","opv3",
+              "penta1","penta2","penta3","pcv1","pcv2","pcv3","rota1","rota2")
+  ),
+  rmncah = list(
+    anc   = c("anc1","anc_1trimester","anc4","ipt2","ipt3","syphilis_test","ifa90","hiv_test"),
+    idelv = c("sba","instdeliveries","instlivebirths","csection","low_bweight","pnc48h",
+              "total_stillbirth","stillbirth_f","stillbirth_m","maternal_deaths","neonatal_deaths"),
+    vacc  = c("penta1","penta3","measles1","measles2","bcg"),
+    opd   = c("opd_total","opd_under5"),
+    ipd   = c("ipd_total","ipd_under5")
+  )
+)
+
 #' Get Indicator Groups
 #'
 #' Default grouping of indicators used in CD2030 coverage framework
@@ -90,15 +107,22 @@ is_maternal_indicator <- function(indicator) {
 #' @return A named list of grouped indicators
 #'
 #' @export
-get_indicator_groups <- function() {
-  list(
-    anc = c("anc1", "anc_1trimester", "anc4", "ipt2", "ipt3", "syphilis_test", "ifa90", "hiv_test"),
-    idelv = c("sba", "instdeliveries", "instlivebirths", "csection", "low_bweight", "pnc48h", "total_stillbirth", "stillbirth_f", "stillbirth_m", "maternal_deaths", "neonatal_deaths"),
-    vacc = c("penta1", "penta3", "measles1", "measles2", "bcg"),
-    opd = c("opd_total", "opd_under5"),
-    ipd = c("ipd_total", "ipd_under5")
-  )
+get_indicator_groups <- function(group = get_selected_group()) {
+  choices <- union(names(.cd2030_indicator_groups), names(.cd2030_state$overrides))
+  group <- arg_match0(group, choices = choices, multiple = FALSE)
+
+  out <- .cd2030_indicator_groups[[group]]
+  ov  <- .cd2030_state$overrides[[group]]
+  if (!is.null(ov)) out <- modifyList(out %||% list(), ov, keep.null = TRUE)
+
+  if (is.null(out)) {
+    rlang::abort(paste0("Unknown group '", group, "'. Available: ", paste(choices, collapse = ", ")))
+  }
+  out
 }
+
+# small helper
+`%||%` <- function(x, y) if (is.null(x)) y else x
 
 #' Get Indicator Group Names
 #' @return Character vector of indicator group names

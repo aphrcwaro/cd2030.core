@@ -4,11 +4,36 @@
 \alias{load_data}
 \title{Load Processed Countdown 2030 Data from RDS or DTA File}
 \usage{
-load_data(path)
+load_data(
+  path,
+  indicator_group,
+  start_year = NULL,
+  admin_sheet_name = "Admin_data",
+  population_sheet_name = "Population_data",
+  reporting_sheet_name = "Reporting_completeness",
+  service_sheet_names = c("Service_data_1", "Service_data_2")
+)
 }
 \arguments{
 \item{path}{A string. The path to the file containing the processed data
-in either RDS or DTA format.}
+in either Excel or DTA format.}
+
+\item{indicator_group}{Required. One of \code{"rmncah"} or \code{"vaccine"}}
+
+\item{start_year}{An integer. The minimum year to filter the data (default is
+NULL).}
+
+\item{admin_sheet_name}{A string. The name of the sheet containing administrative
+data. Default is \code{"Admin_data"}.}
+
+\item{population_sheet_name}{A string. The name of the sheet containing population
+data. Default is \code{"Population_data"}.}
+
+\item{reporting_sheet_name}{A string. The name of the sheet containing reporting
+completeness data. Default is \code{"Reporting_completeness"}.}
+
+\item{service_sheet_names}{A vector of strings. The names of the sheets containing
+service data. Default is \code{c("Service_data_1", "Service_data_2")}.}
 }
 \value{
 A tibble of class \code{cd_data} containing the loaded data.
@@ -19,14 +44,13 @@ RDS or DTA format, and returns a tibble of class \code{cd_data}.
 }
 \details{
 This function first checks the file extension to determine the format, then reads
-the data accordingly. It supports both RDS and Stata (DTA) file formats commonly
-used for saving processed datasets.
+the data accordingly. It supports both Excel and Stata (DTA) file formats commonly
+used for saving cleaned datasets.
 }
 \examples{
 \dontrun{
-# Load previously processed data from an RDS or DTA file
-data <- load_data("processed_cd2030_data.rds")
-data <- load_data("processed_cd2030_data.dta")
+  # Load previously processed data from an RDS or DTA file
+  data <- load_data("processed_cd2030_data.dta", 'rmncah')
 }
 
 }

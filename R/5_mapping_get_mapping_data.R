@@ -159,7 +159,7 @@ get_country_shapefile <- function(country_iso, level = c("admin_level_1", "distr
   check_required(country_iso)
   level <- arg_match(level)
 
-  shapefile_path <- system.file(file.path("shapefiles", "admin_level_1.gpkg"), package = "cd2030.rmncah")
+  shapefile_path <- system.file(file.path("shapefiles", "admin_level_1.gpkg"), package = "cd2030.core")
   check_file_path(shapefile_path)
 
   sf_data <- st_read(shapefile_path, layer = country_iso, quiet = TRUE)

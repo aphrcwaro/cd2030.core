@@ -1,9 +1,174 @@
+#' Load Processed Countdown 2030 Data from RDS or DTA File
+#'
+#' `load_data` loads processed Countdown 2030 data from a specified file, either in
+#' RDS or DTA format, and returns a tibble of class `cd_data`.
+#'
+#' @param path A string. The path to the file containing the processed data
+#'   in either Excel or DTA format.
+#' @param indicator_group Required. One of `"rmncah"` or `"vaccine"`
+#' @param start_year An integer. The minimum year to filter the data (default is
+#'   NULL).
+#' @param admin_sheet_name A string. The name of the sheet containing administrative
+#'   data. Default is `"Admin_data"`.
+#' @param population_sheet_name A string. The name of the sheet containing population
+#'   data. Default is `"Population_data"`.
+#' @param reporting_sheet_name A string. The name of the sheet containing reporting
+#'   completeness data. Default is `"Reporting_completeness"`.
+#' @param service_sheet_names A vector of strings. The names of the sheets containing
+#'   service data. Default is `c("Service_data_1", "Service_data_2")`.
+#'
+#' @return A tibble of class `cd_data` containing the loaded data.
+#' @details
+#' This function first checks the file extension to determine the format, then reads
+#' the data accordingly. It supports both Excel and Stata (DTA) file formats commonly
+#' used for saving cleaned datasets.
+#'
+#' @examples
+#' \dontrun{
+#'   # Load previously processed data from an RDS or DTA file
+#'   data <- load_data("processed_cd2030_data.dta", 'rmncah')
+#' }
+#'
+#' @export
+load_data <- function(path,
+                      indicator_group,
+                      start_year = NULL,
+                      admin_sheet_name = "Admin_data",
+                      population_sheet_name = "Population_data",
+                      reporting_sheet_name = "Reporting_completeness",
+                      service_sheet_names = c("Service_data_1", "Service_data_2")) {
+  check_file_path(path)
+
+  # validate group against immutable defaults
+  indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
+  set_selected_group(indicator_group)
+
+  # Determine file extension and load accordingly
+  ext <- str_to_lower(tools::file_ext(path))
+  final_data <- if (ext %in% c('xlsx', 'xlsm', 'xls')) {
+    .load_excel_data(path, indicator_group, start_year,
+                     admin_sheet_name, population_sheet_name,
+                     service_sheet_names, service_sheet_names)
+  } else if (ext == 'dta') {
+    .load_master_dataset(path, indicator_group)
+  } else {
+    cd_abort(c("x" = "Unsupported file for load_data(). Use Excel or Stata"))
+  }
+
+  return(final_data)
+}
+
+
+#' Load Processed Countdown 2030 Data from RDS or DTA File
+#'
+#' `load_data` loads processed Countdown 2030 data from a specified file, either in
+#' RDS or DTA format, and returns a tibble of class `cd_data`.
+#'
+#' @param path A string. The path to the file containing the processed data
+#'   in either Excel or DTA format.
+#' @param indicator_group Required. One of `"rmncah"` or `"vaccine"`
+#' @param start_year An integer. The minimum year to filter the data (default is
+#'   NULL).
+#' @param admin_sheet_name A string. The name of the sheet containing administrative
+#'   data. Default is `"Admin_data"`.
+#' @param population_sheet_name A string. The name of the sheet containing population
+#'   data. Default is `"Population_data"`.
+#' @param reporting_sheet_name A string. The name of the sheet containing reporting
+#'   completeness data. Default is `"Reporting_completeness"`.
+#' @param service_sheet_names A vector of strings. The names of the sheets containing
+#'   service data. Default is `c("Service_data_1", "Service_data_2")`.
+#'
+#' @return A tibble of class `cd_data` containing the loaded data.
+#' @details
+#' This function first checks the file extension to determine the format, then reads
+#' the data accordingly. It supports both Excel and Stata (DTA) file formats commonly
+#' used for saving cleaned datasets.
+#'
+#' @examples
+#' \dontrun{
+#'   # Load previously processed data from an RDS or DTA file
+#'   data <- load_data("processed_cd2030_data.dta", 'rmncah')
+#' }
+#'
+#' @export
+load_cache_data <- function(path,
+                            indicator_group,
+                            start_year = NULL,
+                            admin_sheet_name = "Admin_data",
+                            population_sheet_name = "Population_data",
+                            reporting_sheet_name = "Reporting_completeness",
+                            service_sheet_names = c("Service_data_1", "Service_data_2")) {
+  check_file_path(path)
+
+  # validate group against immutable defaults
+  indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
+
+  # Determine file extension and load accordingly
+  ext <- str_to_lower(tools::file_ext(path))
+  final_data <- if (ext %in% c('xlsx', 'xlsm', 'xls', 'dta')) {
+    data <- load_data(path, indicator_group, start_year, admin_sheet_name, population_sheet_name,
+                      service_sheet_names, service_sheet_names)
+    return(init_CacheConnection(countdown_data = data))
+  } else if (ext == 'rds') {
+    set_selected_group(indicator_group)
+    return(init_CacheConnection(rds_path = path))
+  } else {
+    cd_abort(c("x" = "Unsupported file for load_data(). Use Excel, Cahe or Stata"))
+  }
+
+  return(final_data)
+}
+
+#' Load Processed Countdown 2030 Data from RDS or DTA File
+#'
+#' `.load_master_dataset` loads processed Countdown 2030 data from a specified file, either in
+#' RDS or DTA format, and returns a tibble of class `cd_data`.
+#'
+#' @param path A string. The path to the file containing the processed data
+#'   in either RDS or DTA format.
+#' @param indicator_group Required. One of `"rmncah"` or `"vaccine"`
+#'
+#' @return A tibble of class `cd_data` containing the loaded data.
+#' @details
+#' This function first checks the file extension to determine the format, then reads
+#' the data accordingly. It supports both RDS and Stata (DTA) file formats commonly
+#' used for saving processed datasets.
+#'
+#' @examples
+#' \dontrun{
+#'   # Load previously processed data from an RDS or DTA file
+#'   data <- load_data("processed_cd2030_data.dta", 'rmncah')
+#' }
+#'
+#' @noRd
+.load_master_dataset <- function(path, indicator_group) {
+  check_file_path(path)
+
+  # validate group against immutable defaults
+  indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
+  set_selected_group(indicator_group)
+
+  # Determine file extension and load accordingly
+  ext <- tools::file_ext(path)
+  if (str_to_lower(ext) != 'dta') {
+    cd_abort(
+      "x" = "Unsupported file format: please provide a DTA file."
+    )
+  }
+
+  out <- read_dta(path) %>%
+    mutate(across(where(is.labelled), as_factor))
+
+  new_countdown(out)
+}
+
 #' Load and Clean Countdown 2030 Excel Data
 #'
-#' `load_excel_data` reads specified sheets from an Excel file, cleans the data,
+#' `.load_excel_data` reads specified sheets from an Excel file, cleans the data,
 #' and outputs a tibble of class `cd_data`.
 #'
 #' @param path A string. The path to the Excel file to be loaded.
+#' @param indicator_group Required. One of `"rmncah"` or `"vaccine"`
 #' @param start_year An integer. The minimum year to filter the data (default is
 #'   NULL).
 #' @param admin_sheet_name A string. The name of the sheet containing administrative
@@ -24,24 +189,31 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Load and clean data from a Countdown 2030 Excel file
-#' data <- load_excel_data("countdown2030_data.xlsx")
+#'   # Load and clean data from a Countdown 2030 Excel file
+#'   data <- load_excel_data("countdown2030_data.xlsx")
 #' }
 #'
-#' @export
-load_excel_data <- function(path,
+#' @noRd
+.load_excel_data <- function(path,
+                            indicator_group,
                             start_year = NULL,
                             admin_sheet_name = "Admin_data",
                             population_sheet_name = "Population_data",
                             reporting_sheet_name = "Reporting_completeness",
                             service_sheet_names = c("Service_data_1", "Service_data_2")) {
+  check_file_path(path)
+
+  # validate group against immutable defaults
+  indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
+  set_selected_group(indicator_group)
+
   # Combine all sheet names
   sheet_names <- c(service_sheet_names, reporting_sheet_name, population_sheet_name, admin_sheet_name)
 
   # Validate if sheet names are provided
   if (length(sheet_names) == 0) {
     cd_abort(
-      c("x" = "The {.arg sheet_names} argument is required and cannot be empty. Provide at least one sheet name.")
+      c("x" = "The {.arg sheet_names} cannot be empty. Provide at least one sheet name.")
     )
   }
 
@@ -51,7 +223,7 @@ load_excel_data <- function(path,
   if (length(missing_sheets) > 0) {
     cd_abort(
       c(
-        "x" = "The following sheets are missing: ",
+        "x" = "missing sheet(s)",
         "!" = paste(missing_sheets, collapse = ", ")
       )
     )
@@ -64,58 +236,20 @@ load_excel_data <- function(path,
   )
 
   # Log and load each sheet with basic cleaning steps
-  cd_info(c("i" = "Loading sheets from {.val {path}}"))
-  data <- map(sheet_names, ~ suppressMessages(read_and_clean_sheet(path, .x, sheet_ids, start_year)))
-  names(data) <- sheet_names
+  cd_info(c("i" = str_glue("Loading Excel {.val {basename(path)}} for `{.arg {indicator_group}}`")))
+  parts <- map(sheet_names, ~ suppressMessages(
+    read_and_clean_sheet(path, .x, sheet_ids, start_year)
+  ))
+  names(parts) <- sheet_names
 
   # Standardize merged data
-  data <- data %>%
+  out <- parts %>%
     merge_data(sheet_names, sheet_ids) %>%
     standardize_data()
 
   cd_info(c("i" = "Successfully loaded and cleaned data"), )
 
   new_countdown(data)
-}
-
-#' Load Processed Countdown 2030 Data from RDS or DTA File
-#'
-#' `load_data` loads processed Countdown 2030 data from a specified file, either in
-#' RDS or DTA format, and returns a tibble of class `cd_data`.
-#'
-#' @param path A string. The path to the file containing the processed data
-#'   in either RDS or DTA format.
-#'
-#' @return A tibble of class `cd_data` containing the loaded data.
-#' @details
-#' This function first checks the file extension to determine the format, then reads
-#' the data accordingly. It supports both RDS and Stata (DTA) file formats commonly
-#' used for saving processed datasets.
-#'
-#' @examples
-#' \dontrun{
-#' # Load previously processed data from an RDS or DTA file
-#' data <- load_data("processed_cd2030_data.rds")
-#' data <- load_data("processed_cd2030_data.dta")
-#' }
-#'
-#' @export
-load_data <- function(path) {
-  check_file_path(path)
-
-  # Determine file extension and load accordingly
-  file_extension <- tools::file_ext(path)
-  final_data <- switch(file_extension,
-    "rds" = readRDS(file = path),
-    "dta" = read_dta(path),
-    cd_abort(
-      "x" = "Unsupported file format: please provide an RDS or DTA file."
-    )
-  )
-  final_data <- final_data %>%
-    mutate(across(where(is.labelled), as_factor))
-
-  new_countdown(final_data)
 }
 
 #' Create Countdown 2030 Data Object

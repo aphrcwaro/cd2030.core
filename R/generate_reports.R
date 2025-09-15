@@ -49,7 +49,7 @@ generate_report <- function(cache,
   dir.create(temp_dir)
 
   render(
-    input = file.path(system.file(package = "cd2030.rmncah"), "rmd", paste0(report_name, "_template.Rmd")),
+    input = file.path(system.file(package = "cd2030.core"), "rmd", paste0(report_name, "_template.Rmd")),
     output_format = format,
     output_file = output_path,
     params = list(cache = cache, country = cache$country, adminlevel_1 = adminlevel_1),

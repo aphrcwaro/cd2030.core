@@ -3,7 +3,6 @@
 #' @import ggplot2
 #' @import rlang
 #' @import khisr
-#' @import shiny
 #' @import tidyr
 "_PACKAGE"
 

@@ -4,7 +4,12 @@
 \alias{filter_indicator_coverage}
 \title{Filter Indicator Coverage for Plotting}
 \usage{
-filter_indicator_coverage(.data, indicator, survey_coverage = 88)
+filter_indicator_coverage(
+  .data,
+  indicator,
+  survey_coverage = 88,
+  survey_year = 2024
+)
 }
 \arguments{
 \item{.data}{A \code{cd_indicator_coverage} object.}

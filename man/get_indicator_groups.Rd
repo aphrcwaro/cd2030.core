@@ -4,7 +4,7 @@
 \alias{get_indicator_groups}
 \title{Get Indicator Groups}
 \usage{
-get_indicator_groups()
+get_indicator_groups(group = get_selected_group())
 }
 \value{
 A named list of grouped indicators
