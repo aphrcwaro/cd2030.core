@@ -11,6 +11,25 @@ check_file_path <- function(path, call = caller_env()) {
   invisible(TRUE)
 }
 
+check_required_columns_exist <- function(.data) {
+  # Indicator groups required for analysis within Countdown 2030
+  indicator_groups <- get_indicator_groups()
+
+  # Check for any missing columns within the indicator groups
+  missing_cols <- list_c(imap(indicator_groups, ~ setdiff(c(.x, paste0(.y, "_rr")), colnames(.data))))
+
+  # Abort with a detailed error message if required columns are missing
+  if (length(missing_cols) > 0) {
+    cd_abort(
+      c(
+        "x" = "The following required columns are missing from the data:",
+        "!" = '{.field {paste(missing_cols, collapse = ", ")}}'
+      ),
+      call = call
+    )
+  }
+}
+
 check_cd_class <- function(.data,
                            expected_class,
                            arg = caller_arg(.data),

@@ -105,7 +105,7 @@ load_cache_data <- function(path,
 
   # Determine file extension and load accordingly
   ext <- str_to_lower(tools::file_ext(path))
-  final_data <- if (ext %in% c('xlsx', 'xlsm', 'xls', 'dta')) {
+  final_data <- if (ext %in% c('xlsx', 'xls', 'dta')) {
     data <- load_data(path, indicator_group, start_year, admin_sheet_name, population_sheet_name,
                       service_sheet_names, service_sheet_names)
     return(init_CacheConnection(countdown_data = data))
@@ -294,22 +294,8 @@ load_cache_data <- function(path,
 #'
 #' @export
 new_countdown <- function(.data, class = NULL, call = caller_env()) {
-  # Indicator groups required for analysis within Countdown 2030
-  indicator_groups <- get_indicator_groups()
 
-  # Check for any missing columns within the indicator groups
-  missing_cols <- list_c(imap(indicator_groups, ~ setdiff(c(.x, paste0(.y, "_rr")), colnames(.data))))
-
-  # Abort with a detailed error message if required columns are missing
-  if (length(missing_cols) > 0) {
-    cd_abort(
-      c(
-        "x" = "The following required columns are missing from the data:",
-        "!" = '{.field {paste(missing_cols, collapse = ", ")}}'
-      ),
-      call = call
-    )
-  }
+  check_required_columns_exist(.data)
 
   country_name <- .data %>%
     distinct(country) %>%

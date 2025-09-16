@@ -10,10 +10,14 @@
 #'
 #' @export
 init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL) {
-  CacheConnection$new(
+  cache <- CacheConnection$new(
     rds_path = rds_path,
     countdown_data = countdown_data
   )
+
+  check_required_columns_exist(cache$countdown_data)
+
+  return(cache)
 }
 
 #' Print Notes for a Specific Page and Object
@@ -97,8 +101,6 @@ CacheConnection <- R6::R6Class(
       private$.in_memory_data$countdown_data <- countdown_data
       private$.in_memory_data$rds_path <- rds_path
       private$.in_memory_data$survey_source <- NA
-
-      print(private$.in_memory_data$rds_path)
 
       if (!is.null(rds_path)) {
         self$load_from_disk()
