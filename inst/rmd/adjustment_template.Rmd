@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
   dpi=1200
 )
 
-library(cd2030.rmncah)
+library(cd2030.core)
 library(dplyr)
 library(purrr)
 library(reactable)

@@ -11,14 +11,14 @@ Authors@R: c(
       person("African Population and Health Research Center (APHRC)", 
             role = c("cph", "fnd"))
     )
-Description: cd2030.rmncah is an R package for managing and validating data formatted 
+Description: cd2030.core is an R package for managing and validating data formatted 
     according to Countdown 2030 standards. It provides tools for data loading,
     cleaning, and validation, detecting issues like missing values, inconsistencies, 
     outliers, and ratio anomalies. The package ensures compliance with Countdown 2030 
     guidelines and generates standardized data quality reports, enabling users to 
     focus on analysis and interpretation.
 License: AGPL (>= 3)
-URL: https://aphrcwaro.github.io/cd2030.rmncah/, https://github.com/aphrcwaro/cd2030.rmncah
+URL: https://aphrcwaro.github.io/cd2030.core/, https://github.com/aphrcwaro/cd2030.core
 Imports: 
     cli (>= 3.6.2),
     dplyr (>= 1.1.4),
@@ -52,5 +52,5 @@ RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.1)
 LazyData: true
-BugReports: https://github.com/aphrcwaro/cd2030.rmncah/issues
+BugReports: https://github.com/aphrcwaro/cd2030.core/issues
 Config/testthat/edition: 3

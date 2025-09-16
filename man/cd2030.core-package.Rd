@@ -6,14 +6,14 @@
 \alias{cd2030.core-package}
 \title{cd2030.core: Data Loading, Validation, and Reporting for Countdown 2030}
 \description{
-cd2030.rmncah is an R package for managing and validating data formatted according to Countdown 2030 standards. It provides tools for data loading, cleaning, and validation, detecting issues like missing values, inconsistencies, outliers, and ratio anomalies. The package ensures compliance with Countdown 2030 guidelines and generates standardized data quality reports, enabling users to focus on analysis and interpretation.
+cd2030.core is an R package for managing and validating data formatted according to Countdown 2030 standards. It provides tools for data loading, cleaning, and validation, detecting issues like missing values, inconsistencies, outliers, and ratio anomalies. The package ensures compliance with Countdown 2030 guidelines and generates standardized data quality reports, enabling users to focus on analysis and interpretation.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://aphrcwaro.github.io/cd2030.rmncah/}
-  \item \url{https://github.com/aphrcwaro/cd2030.rmncah}
-  \item Report bugs at \url{https://github.com/aphrcwaro/cd2030.rmncah/issues}
+  \item \url{https://aphrcwaro.github.io/cd2030.core/}
+  \item \url{https://github.com/aphrcwaro/cd2030.core}
+  \item Report bugs at \url{https://github.com/aphrcwaro/cd2030.core/issues}
 }
 
 }
