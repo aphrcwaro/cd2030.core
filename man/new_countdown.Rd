@@ -4,7 +4,7 @@
 \alias{new_countdown}
 \title{Create Countdown 2030 Data Object}
 \usage{
-new_countdown(.data, class = NULL, call = caller_env())
+new_countdown(.data, class = NULL)
 }
 \arguments{
 \item{.data}{A tibble. The cleaned and processed data to be converted to
@@ -12,8 +12,6 @@ new_countdown(.data, class = NULL, call = caller_env())
 
 \item{class}{Optional. A character vector specifying additional classes to assign
 to the resulting tibble.}
-
-\item{call}{The calling environment. Defaults to \code{caller_env()}.}
 }
 \value{
 A tibble of class \code{cd_data}, containing an \code{indicator_groups} attribute

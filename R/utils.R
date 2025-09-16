@@ -11,7 +11,7 @@ check_file_path <- function(path, call = caller_env()) {
   invisible(TRUE)
 }
 
-check_required_columns_exist <- function(.data) {
+check_required_columns_exist <- function(.data, call = caller_env()) {
   # Indicator groups required for analysis within Countdown 2030
   indicator_groups <- get_indicator_groups()
 

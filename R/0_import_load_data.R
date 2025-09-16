@@ -262,7 +262,6 @@ load_cache_data <- function(path,
 #'   `cd_data` class.
 #' @param class Optional. A character vector specifying additional classes to assign
 #'   to the resulting tibble.
-#' @param call The calling environment. Defaults to `caller_env()`.
 #'
 #' @return A tibble of class `cd_data`, containing an `indicator_groups` attribute
 #'   that includes validated indicator groups available in the dataset, categorized
@@ -293,7 +292,7 @@ load_cache_data <- function(path,
 #'   `cd_data` object.
 #'
 #' @export
-new_countdown <- function(.data, class = NULL, call = caller_env()) {
+new_countdown <- function(.data, class = NULL) {
 
   check_required_columns_exist(.data)
 
