@@ -691,7 +691,15 @@ CacheConnection <- R6::R6Class(
     adjusted_flag = function(value) private$getter('adjusted_flag', value),
 
     #' @field survey_estimates Gets survey estimates.
-    survey_estimates = function(value) private$getter('survey_estimates', value),
+    survey_estimates = function(value) {
+      estimates <- private$getter('survey_estimates', value)
+      group <- get_selected_group()
+      if (group == 'vaccine') {
+        estimates[c("anc1", "penta1", "penta3", "measles1", "bcg")]
+      } else {
+        estimates
+      }
+    },
 
     #' @field national_estimates Gets national estimates.
     national_estimates = function(value) {
