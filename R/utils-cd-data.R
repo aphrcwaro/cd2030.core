@@ -86,7 +86,7 @@ is_maternal_indicator <- function(indicator) {
 .cd2030_indicator_groups <- list(
   vaccine = list(
     anc   = c("anc1"),
-    idelv = c("ideliv","instlivebirths"),
+    idelv = c("instdeliveries","instlivebirths"),
     vacc  = c("bcg","ipv1","ipv2","measles1","measles2","opv1","opv2","opv3",
               "penta1","penta2","penta3","pcv1","pcv2","pcv3","rota1","rota2")
   ),
