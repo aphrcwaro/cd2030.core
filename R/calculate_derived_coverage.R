@@ -27,6 +27,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year, region = NUL
 
   # Match and reference the selected indicator
   indicator <- arg_match(indicator, get_all_indicators())
+  print(indicator)
   indicator_col <- sym(indicator)
 
   coverage <- paste0("cov_", indicator, "_penta1")
