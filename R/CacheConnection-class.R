@@ -125,7 +125,7 @@ CacheConnection <- R6::R6Class(
       # }
       private$.in_memory_data <- loaded_data
       private$.in_memory_data$countdown_data <- private$.in_memory_data$countdown_data %>%
-        rename(instdeliveries = any_of(ideliv))
+        rename(instdeliveries = any_of('ideliv'))
     },
 
     #' Save data to disk (only if changed and RDS path is not NULL)
