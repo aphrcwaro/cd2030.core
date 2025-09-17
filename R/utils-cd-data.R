@@ -172,7 +172,10 @@ get_population_column <- function(indicator, denominator) {
     c("anc1", "anc_1trimester", "anc4", "ipt2", "ipt3", "ifa90", "syphilis_test", "hiv_test") ~ "totpreg",
     c("bcg", "instlivebirths", "low_bweight", "pnc48h", "bcg") ~ ifelse(denominator == 'dhis2', 'totbirths', "totlbirths"),
     c("instdeliveries", "csection") ~ 'totdeliv',
-    c("penta1", "penta3") ~ "totinftpenta",
+    c('penta1', 'penta2', 'penta3', 'pcv1', 'pcv2', 'pcv3', 'rota1',
+      'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3', 'undervax','dropout_penta13','zerodose','dropout_penta3mcv1','dropout_penta1mcv1') ~ 'totinftpenta',
+    c('measles1', 'dropout_measles12') ~ 'totinftmeasles',
+    'measles2' ~ 'totmeasles2'
     c("measles1", "measles2") ~ "totinftmeasles"
   )
   if (is.na(population)) {
