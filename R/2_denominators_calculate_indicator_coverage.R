@@ -169,23 +169,6 @@ calculate_populations <- function(.data,
                                   dpt1survey = 0.97,
                                   twin = 0.015,
                                   preg_loss = 0.03) {
-  pop_dhis2 <- under5_dhis2 <- under1_dhis2 <- livebirths_dhis2 <- allbirths_dhis2 <-
-    wom15_49_dhis2 <- year <- un_under5y <- un_population <- un_under1y <- un_wom15_49 <-
-    tot_under5_dhis2 <- tot_pop_dhis2 <- tot_under1_dhis2 <- tot_wom15_49_dhis2 <-
-    tot_livebirths_dhis2 <- tot_allbirths_dhis2 <- national <- totcbr_dhis2 <-
-    totpopgrowth <- adminlevel_1 <- district <- totpop_dhis2 <- totunder5_dhis2 <-
-    totunder1_dhis2 <- totlivebirths_dhis2 <- un_births <- totwom15_49_dhis2 <-
-    un_popgrowth <- un_cbr <- totpreg_dhis2 <- totinftpenta_dhis2 <-
-    anc1 <- totpreg_anc1 <- totdeliv_anc1 <- totbirths_anc1 <-
-    totlbirths_anc1 <- totinftpenta_anc1 <- penta1 <-
-    totinftpenta_penta1 <- totlbirths_penta1 <- totbirths_penta1 <-
-    totdeliv_penta1 <- totpreg_un <- totinftpenta_un <-
-    instlivebirths <- totdeliv_un <- bcg <- penta2 <- penta3 <- measles1 <-
-    totinftmeasles_un <- measles2 <- totmeasles2_un <- opv1 <- opv2 <-
-    opv3 <- pcv1 <- pcv2 <- pcv3 <- rota1 <- rota2 <- ipv1 <- ipv2 <- totdeliv_dhis2 <-
-    totinftmeasles_dhis2 <- totmeasles2_dhis2 <- totinftmeasles_penta1 <-
-    totinftmeasles_anc1 <- totmeasles2_anc1 <- totpreg_penta1 <-
-    otinftmeasles_penta1 <- totmeasles2_penta1 <- NULL
 
   admin_level <- arg_match(admin_level)
 
@@ -235,106 +218,252 @@ calculate_populations <- function(.data,
         totmeasles2_un = totinftpenta_un - totinftpenta_un * (2 * pnmr),
 
         cov_anc1_un = 100 * anc1/(totpreg_un * 1000),
-        cov_anc_1trimester_un = 100 * anc_1trimester/(totpreg_un * 1000),
-        cov_anc4_un = 100 * anc4/(totpreg_un * 1000),
-
-        cov_ipt2_un = 100 * ipt2/(totpreg_un * 1000),
-        cov_ipt3_un = 100 * ipt3/(totpreg_un * 1000),
-        cov_ifa90_un = 100 * ifa90/(totpreg_un * 1000),
-        cov_syphilis_test_un = 100 * syphilis_test/(totpreg_un * 1000),
-        cov_hiv_test_un = 100 * hiv_test/(totpreg_un * 1000),
-
-        cov_sba_un = 100 * sba/(un_births * 1000),
         cov_instlivebirths_un = 100 * instlivebirths/(un_births * 1000),
         cov_instdeliveries_un = 100 * instlivebirths/(totdeliv_un * 1000),
-        cov_low_bweight_un = 100 * low_bweight/(un_births * 1000),
-        cov_csection_un = 100 * csection/(totdeliv_un * 1000),
-        cov_pnc48h_un = 100 * pnc48h/(un_births * 1000),
-
         cov_bcg_un = 100 * bcg/(un_births * 1000),
         cov_penta1_un = 100 * penta1/(totinftpenta_un * 1000),
         cov_penta3_un = 100 * penta3/(totinftpenta_un * 1000),
         cov_measles1_un = 100 * measles1/(totinftmeasles_un * 1000),
         cov_measles2_un = 100 * measles2/(totinftmeasles_un * 1000)
       )
+
+      if (get_selected_group() == 'rmncah') {
+        output_data <- output_data %>%
+          mutate(
+            cov_anc_1trimester_un = 100 * anc_1trimester/(totpreg_un * 1000),
+            cov_anc4_un = 100 * anc4/(totpreg_un * 1000),
+
+            cov_ipt2_un = 100 * ipt2/(totpreg_un * 1000),
+            cov_ipt3_un = 100 * ipt3/(totpreg_un * 1000),
+            cov_ifa90_un = 100 * ifa90/(totpreg_un * 1000),
+            cov_syphilis_test_un = 100 * syphilis_test/(totpreg_un * 1000),
+            cov_hiv_test_un = 100 * hiv_test/(totpreg_un * 1000),
+
+            cov_sba_un = 100 * sba/(un_births * 1000),
+
+            cov_low_bweight_un = 100 * low_bweight/(un_births * 1000),
+            cov_csection_un = 100 * csection/(totdeliv_un * 1000),
+            cov_pnc48h_un = 100 * pnc48h/(un_births * 1000)
+          )
+      }
+
+    if (get_selected_group() == 'vaccine') {
+      output_data <- output_data %>%
+        mutate(
+          cov_penta2_un = 100 * penta2/(totinftpenta_un * 1000),
+
+          cov_opv1_un = 100 * opv1/(totinftpenta_un * 1000),
+          cov_opv2_un = 100 * opv2/(totinftpenta_un * 1000),
+          cov_opv3_un = 100 * opv3/(totinftpenta_un * 1000),
+
+          cov_pcv1_un = 100 * pcv1/(totinftpenta_un * 1000),
+          cov_pcv2_un = 100 * pcv2/(totinftpenta_un * 1000),
+          cov_pcv3_un = 100 * pcv3/(totinftpenta_un * 1000),
+
+          cov_rota1_un = 100 * rota1/(totinftpenta_un * 1000),
+          cov_rota2_un = 100 * rota2/(totinftpenta_un * 1000),
+
+          cov_ipv1_un = 100 * ipv1/(totinftpenta_un * 1000),
+          cov_ipv2_un = 100 * ipv2/(totinftpenta_un * 1000),
+
+          cov_zerodose_un = 100 * ((totinftpenta_un * 1000 - penta1)/totinftpenta_un * 1000),
+          cov_undervax_un = 100 * ((totinftpenta_un * 1000 - penta3)/totinftpenta_un * 1000),
+          cov_dropout_penta13_un = ((penta1 - penta3)/penta1) * 100,
+          cov_dropout_measles12_un = ((measles1 - measles2)/measles1) * 100,
+          cov_dropout_penta3mcv1_un = ((penta3 - measles1)/penta3) * 100,
+          cov_dropout_penta1mcv1_un = ((penta1-measles1)/penta1) * 100
+        )
+    }
   }
 
+  # From DHIS2 Derived Denominators
   output_data <- output_data %>%
     # Compute coverage  based on projected lives births in DHIS-2
     mutate(
       cov_anc1_dhis2 = 100 * anc1/(totpreg_dhis2 * 1000),
-      cov_anc_1trimester_dhis2 = 100 * anc_1trimester/(totpreg_dhis2 * 1000),
-      cov_anc4_dhis2 = 100 * anc4/(totpreg_dhis2 * 1000),
-
-      cov_ipt2_dhis2 = 100 * ipt2/(totpreg_dhis2 * 1000),
-      cov_ipt3_dhis2 = 100 * ipt3/(totpreg_dhis2 * 1000),
-      cov_ifa90_dhis2 = 100 * ifa90/(totpreg_dhis2 * 1000),
-      cov_syphilis_test_dhis2 = 100 * syphilis_test/(totpreg_dhis2 * 1000),
-      cov_hiv_test_dhis2 = 100 * hiv_test/(totpreg_dhis2 * 1000),
-
-      cov_sba_dhis2 = 100 * sba/(totlivebirths_dhis2 * 1000),
       cov_instlivebirths_dhis2 = 100 * instlivebirths/(totlivebirths_dhis2 * 1000),
       cov_instdeliveries_dhis2 = 100 * instlivebirths/(totdeliv_dhis2 * 1000),
-      cov_low_bweight_dhis2 = 100 * low_bweight/(totlivebirths_dhis2 * 1000),
-      cov_csection_dhis2 = 100 * csection/(totdeliv_dhis2 * 1000),
-      cov_pnc48h_dhis2 = 100 * pnc48h/(totlivebirths_dhis2 * 1000),
-
       cov_bcg_dhis2 = 100 * bcg/(totlivebirths_dhis2 * 1000),
       cov_penta1_dhis2 = 100 * penta1/(totinftpenta_dhis2 * 1000),
       cov_penta3_dhis2 = 100 * penta3/(totinftpenta_dhis2 * 1000),
       cov_measles1_dhis2 = 100 * measles1/(totinftmeasles_dhis2 * 1000),
       cov_measles2_dhis2 = 100 * measles2/(totinftmeasles_dhis2 * 1000)
-    ) %>%
+    )
+
+  if (get_selected_group() == 'rmncah') {
+    output_data <- output_data %>%
+      mutate(
+        cov_anc_1trimester_dhis2 = 100 * anc_1trimester/(totpreg_dhis2 * 1000),
+        cov_anc4_dhis2 = 100 * anc4/(totpreg_dhis2 * 1000),
+
+        cov_ipt2_dhis2 = 100 * ipt2/(totpreg_dhis2 * 1000),
+        cov_ipt3_dhis2 = 100 * ipt3/(totpreg_dhis2 * 1000),
+        cov_ifa90_dhis2 = 100 * ifa90/(totpreg_dhis2 * 1000),
+        cov_syphilis_test_dhis2 = 100 * syphilis_test/(totpreg_dhis2 * 1000),
+        cov_hiv_test_dhis2 = 100 * hiv_test/(totpreg_dhis2 * 1000),
+
+        cov_sba_dhis2 = 100 * sba/(totlivebirths_dhis2 * 1000),
+
+        cov_low_bweight_dhis2 = 100 * low_bweight/(totlivebirths_dhis2 * 1000),
+        cov_csection_dhis2 = 100 * csection/(totdeliv_dhis2 * 1000),
+        cov_pnc48h_dhis2 = 100 * pnc48h/(totlivebirths_dhis2 * 1000)
+      )
+  }
+
+  if (get_selected_group() == 'vaccine') {
+    output_data <- output_data %>%
+      mutate(
+        cov_penta2_dhis2 = 100 * penta2/(totinftpenta_dhis2 * 1000),
+
+        cov_opv1_dhis2 = 100 * opv1/(totinftpenta_dhis2 * 1000),
+        cov_opv2_dhis2 = 100 * opv2/(totinftpenta_dhis2 * 1000),
+        cov_opv3_dhis2 = 100 * opv3/(totinftpenta_dhis2 * 1000),
+
+        cov_pcv1_dhis2 = 100 * pcv1/(totinftpenta_dhis2 * 1000),
+        cov_pcv2_dhis2 = 100 * pcv2/(totinftpenta_dhis2 * 1000),
+        cov_pcv3_dhis2 = 100 * pcv3/(totinftpenta_dhis2 * 1000),
+
+        cov_rota1_dhis2 = 100 * rota1/(totinftpenta_dhis2 * 1000),
+        cov_rota2_dhis2 = 100 * rota2/(totinftpenta_dhis2 * 1000),
+
+        cov_ipv1_dhis2 = 100 * ipv1/(totinftpenta_dhis2 * 1000),
+        cov_ipv2_dhis2 = 100 * ipv2/(totinftpenta_dhis2 * 1000),
+
+        cov_zerodose_dhis2 = 100 * ((totinftpenta_dhis2 * 1000 - penta1)/totinftpenta_dhis2 * 1000),
+        # generating undervax indicators
+        cov_undervax_dhis2 = 100 * ((totinftpenta_dhis2 * 1000 - penta3)/totinftpenta_dhis2 * 1000),
+        # generating drop-out indicators
+        cov_dropout_penta13_dhis2 = ((penta1 - penta3)/penta1) * 100,
+        cov_dropout_measles12_dhis2 = ((measles1 - measles2)/measles1) * 100,
+        cov_dropout_penta3mcv1_dhis2 = ((penta3 - measles1)/penta3) * 100,
+        cov_dropout_penta1mcv1_dhis2 = ((penta1 - measles1)/penta1) * 100
+      )
+  }
+
     # From ANC-1 Derived Denominators
+  output_data <- output_data %>%
     mutate(
       cov_anc1_anc1 = 100 * anc1/totpreg_anc1,
-      cov_anc_1trimester_anc1 = 100 * anc_1trimester/totpreg_anc1,
-      cov_anc4_anc1 = 100 * anc4/totpreg_anc1,
-
-      cov_ipt2_anc1 = 100 * ipt2/totpreg_anc1,
-      cov_ipt3_anc1 = 100 * ipt3/totpreg_anc1,
-      cov_ifa90_anc1 = 100 * ifa90/totpreg_anc1,
-      cov_syphilis_test_anc1 = 100 * syphilis_test/totpreg_anc1,
-      cov_hiv_test_anc1 = 100 * hiv_test/totpreg_anc1,
-
-      cov_sba_anc1 = 100 * sba/totlbirths_anc1,
       cov_instlivebirths_anc1 = 100 * instlivebirths/totlbirths_anc1,
       cov_instdeliveries_anc1 = 100 * instlivebirths/totdeliv_anc1,
-      cov_low_bweight_anc1 = 100 * low_bweight/totlbirths_anc1,
-      cov_csection_anc1 = 100 * csection/totdeliv_anc1,
-      cov_pnc48h_anc1 = 100 * pnc48h/totlbirths_anc1,
-
       cov_bcg_anc1 = 100 * bcg/totlbirths_anc1,
       cov_penta1_anc1 = 100 * penta1/totinftpenta_anc1,
       cov_penta3_anc1 = 100 * penta3/totinftpenta_anc1,
       cov_measles1_anc1 = 100 * measles1/totinftmeasles_anc1,
       cov_measles2_anc1 = 100 * measles2/totinftmeasles_anc1
-    ) %>%
+    )
+
+  if (get_selected_group() == 'rmncah') {
+    output_data <- output_data %>%
+      mutate(
+        cov_anc_1trimester_anc1 = 100 * anc_1trimester/totpreg_anc1,
+        cov_anc4_anc1 = 100 * anc4/totpreg_anc1,
+
+        cov_ipt2_anc1 = 100 * ipt2/totpreg_anc1,
+        cov_ipt3_anc1 = 100 * ipt3/totpreg_anc1,
+        cov_ifa90_anc1 = 100 * ifa90/totpreg_anc1,
+        cov_syphilis_test_anc1 = 100 * syphilis_test/totpreg_anc1,
+        cov_hiv_test_anc1 = 100 * hiv_test/totpreg_anc1,
+
+        cov_sba_anc1 = 100 * sba/totlbirths_anc1,
+        cov_low_bweight_anc1 = 100 * low_bweight/totlbirths_anc1,
+        cov_csection_anc1 = 100 * csection/totdeliv_anc1,
+        cov_pnc48h_anc1 = 100 * pnc48h/totlbirths_anc1,
+      )
+  }
+
+  if (get_selected_group() == 'vaccine') {
+    output_data <- output_data %>%
+      mutate(
+        cov_penta2_anc1 = 100 * penta2/totinftpenta_anc1,
+
+        cov_opv1_anc1 = 100 * opv1/totinftpenta_anc1,
+        cov_opv2_anc1 = 100 * opv2/totinftpenta_anc1,
+        cov_opv3_anc1 = 100 * opv3/totinftpenta_anc1,
+
+        cov_pcv1_anc1 = 100 * pcv1/totinftpenta_anc1,
+        cov_pcv2_anc1 = 100 * pcv2/totinftpenta_anc1,
+        cov_pcv3_anc1 = 100 * pcv3/totinftpenta_anc1,
+
+        cov_rota1_anc1 = 100 * rota1/totinftpenta_anc1,
+        cov_rota2_anc1 = 100 * rota2/totinftpenta_anc1,
+
+        cov_ipv1_anc1 = 100 * ipv1/totinftpenta_anc1,
+        cov_ipv2_anc1 = 100 * ipv2/totinftpenta_anc1,
+
+        cov_zerodose_anc1 = 100 * ((totinftpenta_anc1 * 1000 - penta1)/totinftpenta_anc1 * 1000),
+        # generating undervax indicators
+        cov_undervax_anc1 = 100 * ((totinftpenta_anc1 * 1000 - penta3)/totinftpenta_anc1 * 1000),
+        # generating drop-out indicators
+        cov_dropout_penta13_anc1 = ((penta1 - penta3)/penta1) * 100,
+        cov_dropout_measles12_anc1 = ((measles1 - measles2)/measles1) * 100,
+        cov_dropout_penta3mcv1_anc1 = ((penta3-measles1)/penta3) * 100,
+        cov_dropout_penta1mcv1_anc1 = ((penta1 - measles1)/penta1) * 100
+      )
+  }
+
     # From PENTA-1 Derived Denominators
+  output_data <- output_data %>%
     mutate(
       cov_anc1_penta1 = 100 * anc1/totpreg_penta1,
-      cov_anc_1trimester_penta1 = 100 * anc_1trimester/totpreg_penta1,
-      cov_anc4_penta1 = 100 * anc4/totpreg_penta1,
-
-      cov_ipt2_penta1 = 100 * ipt2/totpreg_penta1,
-      cov_ipt3_penta1 = 100 * ipt3/totpreg_penta1,
-      cov_ifa90_penta1 = 100 * ifa90/totpreg_penta1,
-      cov_syphilis_test_penta1 = 100 * syphilis_test/totpreg_penta1,
-      cov_hiv_test_penta1 = 100 * hiv_test/totpreg_penta1,
-
-      cov_sba_penta1 = 100 * sba/totlbirths_penta1,
       cov_instlivebirths_penta1 = 100 * instlivebirths/totlbirths_penta1,
       cov_instdeliveries_penta1 = 100 * instlivebirths/totdeliv_penta1,
-      cov_low_bweight_penta1 = 100 * low_bweight/totlbirths_penta1,
-      cov_csection_penta1 = 100 * csection/totdeliv_penta1,
-      cov_pnc48h_penta1 = 100 * pnc48h/totlbirths_penta1,
-
       cov_bcg_penta1 = 100 * bcg/totlbirths_penta1,
       cov_penta1_penta1 = 100 * penta1/totinftpenta_penta1,
       cov_penta3_penta1 = 100 * penta3/totinftpenta_penta1,
       cov_measles1_penta1 = 100 * measles1/totinftmeasles_penta1,
       cov_measles2_penta1 = 100 * measles2/totinftmeasles_penta1
     )
+
+  if (get_selected_group() == 'rmncah') {
+    output_data <- output_data %>%
+      mutate(
+        cov_anc_1trimester_penta1 = 100 * anc_1trimester/totpreg_penta1,
+        cov_anc4_penta1 = 100 * anc4/totpreg_penta1,
+
+        cov_ipt2_penta1 = 100 * ipt2/totpreg_penta1,
+        cov_ipt3_penta1 = 100 * ipt3/totpreg_penta1,
+        cov_ifa90_penta1 = 100 * ifa90/totpreg_penta1,
+        cov_syphilis_test_penta1 = 100 * syphilis_test/totpreg_penta1,
+        cov_hiv_test_penta1 = 100 * hiv_test/totpreg_penta1,
+
+        cov_sba_penta1 = 100 * sba/totlbirths_penta1,
+
+        cov_low_bweight_penta1 = 100 * low_bweight/totlbirths_penta1,
+        cov_csection_penta1 = 100 * csection/totdeliv_penta1,
+        cov_pnc48h_penta1 = 100 * pnc48h/totlbirths_penta1,
+      )
+  }
+
+  if (get_selected_group() == 'vaccine') {
+    output_data <- output_data %>%
+      mutate(
+        cov_penta2_penta1 = 100 * penta2/totinftpenta_penta1,
+
+        cov_opv1_penta1 = 100 * opv1/totinftpenta_penta1,
+        cov_opv2_penta1 = 100 * opv2/totinftpenta_penta1,
+        cov_opv3_penta1 = 100 * opv3/totinftpenta_penta1,
+
+        cov_pcv1_penta1 = 100 * pcv1/totinftpenta_penta1,
+        cov_pcv2_penta1 = 100 * pcv2/totinftpenta_penta1,
+        cov_pcv3_penta1 = 100 * pcv3/totinftpenta_penta1,
+
+        cov_rota1_penta1 = 100 *rota1/totinftpenta_penta1,
+        cov_rota2_penta1 = 100 * rota2/totinftpenta_penta1,
+
+        cov_ipv1_penta1 = 100 * ipv1/totinftpenta_penta1,
+        cov_ipv2_penta1 = 100 * ipv2/totinftpenta_penta1,
+
+        cov_zerodose_penta1 = 100 * ((totinftpenta_penta1 * 1000 - penta1)/totinftpenta_penta1 * 1000),
+        # generating undervax indicators
+        cov_undervax_penta1 = 100 * ((totinftpenta_penta1 * 1000 - penta3)/totinftpenta_penta1 * 1000),
+        # generating drop-out indicators
+        cov_dropout_penta13_penta1 = ((penta1 - penta3)/penta1) * 100,
+        cov_dropout_measles12_penta1 = ((measles1 - measles2)/measles1) * 100,
+        cov_dropout_penta3mcv1_penta1 = ((penta3 - measles1)/penta3) * 100,
+        cov_dropout_penta1mcv1_penta1 = ((penta1 - measles1)/penta1) * 100
+      )
+  }
 
   new_tibble(
     output_data,
