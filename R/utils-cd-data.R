@@ -176,7 +176,6 @@ get_population_column <- function(indicator, denominator) {
       'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3', 'undervax','dropout_penta13','zerodose','dropout_penta3mcv1','dropout_penta1mcv1') ~ 'totinftpenta',
     c('measles1', 'dropout_measles12') ~ 'totinftmeasles',
     'measles2' ~ 'totmeasles2'
-    c("measles1", "measles2") ~ "totinftmeasles"
   )
   if (is.na(population)) {
     return(NA_character_)
