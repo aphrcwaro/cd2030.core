@@ -27,7 +27,6 @@ calculate_derived_coverage <- function(.data, indicator, base_year, region = NUL
 
   # Match and reference the selected indicator
   indicator <- arg_match(indicator, get_all_indicators())
-  print(indicator)
   indicator_col <- sym(indicator)
 
   coverage <- paste0("cov_", indicator, "_penta1")
@@ -38,6 +37,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year, region = NUL
 
   # Get relevant population column for DHIS2 (e.g., totpop_dhis2)
   dhis2_pop <- get_population_column(indicator, "dhis2")
+  print(dhis2_pop)
   dhis2_pop_col <- sym(dhis2_pop)
 
   penta1_denom <- get_population_column(indicator, "penta1")
