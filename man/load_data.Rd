@@ -2,55 +2,91 @@
 % Please edit documentation in R/0_import_load_data.R
 \name{load_data}
 \alias{load_data}
-\title{Load Processed Countdown 2030 Data from RDS or DTA File}
+\title{Load Countdown 2030 data (Excel or Stata)}
 \usage{
 load_data(
   path,
-  indicator_group,
+  indicator_group = c("auto", "vaccine", "rmncah", "custom"),
+  profile = NULL,
+  on_conflict = c("replace", "merge", "error"),
   start_year = NULL,
-  admin_sheet_name = "Admin_data",
-  population_sheet_name = "Population_data",
-  reporting_sheet_name = "Reporting_completeness",
-  service_sheet_names = c("Service_data_1", "Service_data_2")
+  admin_sheet_name = NULL,
+  population_sheet_name = NULL,
+  reporting_sheet_name = NULL,
+  service_sheet_names = NULL
 )
 }
 \arguments{
-\item{path}{A string. The path to the file containing the processed data
-in either Excel or DTA format.}
+\item{path}{Path to \code{.xlsx}, \code{.xls}, or \code{.dta}.}
 
-\item{indicator_group}{Required. One of \code{"rmncah"} or \code{"vaccine"}}
+\item{indicator_group}{One of \code{"auto"}, \code{"vaccine"}, \code{"rmncah"}, \code{"custom"}.
+Default \code{"auto"}.}
 
-\item{start_year}{An integer. The minimum year to filter the data (default is
-NULL).}
+\item{profile}{Optional. Either a \strong{name} (string) of an existing group, or a
+\strong{definition} to register inline before loading:
+\itemize{
+\item explicit form: \code{list(name = "rmncah", value = list(hiv = c("hiv_test","pmtct1")))}
+\item compact form:  \code{list(hiv_profile = list(testing = c("hiv_test"), care = c("art_new")))}
+}
 
-\item{admin_sheet_name}{A string. The name of the sheet containing administrative
-data. Default is \code{"Admin_data"}.}
+For \code{"custom"}, the profile must resolve to \strong{one} concrete name.}
 
-\item{population_sheet_name}{A string. The name of the sheet containing population
-data. Default is \code{"Population_data"}.}
+\item{on_conflict}{Conflict policy when \code{profile} is a definition:
+one of \code{"replace"}, \code{"merge"}, or \code{"error"}. Default \code{"replace"}.
+\code{"merge"} unions indicators per category.}
 
-\item{reporting_sheet_name}{A string. The name of the sheet containing reporting
-completeness data. Default is \code{"Reporting_completeness"}.}
+\item{start_year}{Optional integer filter for minimum year.}
 
-\item{service_sheet_names}{A vector of strings. The names of the sheets containing
-service data. Default is \code{c("Service_data_1", "Service_data_2")}.}
+\item{admin_sheet_name}{Excel sheet with admin data. Default \code{"Admin_data"}.}
+
+\item{population_sheet_name}{Excel sheet with population data. Default \code{"Population_data"}.}
+
+\item{reporting_sheet_name}{Excel sheet with reporting completeness. Default \code{"Reporting_completeness"}.}
+
+\item{service_sheet_names}{Character vector of service-data sheets.
+Default: all sheets matching \code{"Service_data"} if not supplied.}
 }
 \value{
-A tibble of class \code{cd_data} containing the loaded data.
+A tibble of class \code{cd_data}.
 }
 \description{
-\code{load_data} loads processed Countdown 2030 data from a specified file, either in
-RDS or DTA format, and returns a tibble of class \code{cd_data}.
+Loads a cleaned dataset from an Excel (.xlsx/.xls) or Stata (.dta) file,
+optionally \strong{registers} a profile override, and returns a tibble of class
+\code{cd_data}. Group selection is resolved from the data inside \code{\link[=new_countdown]{new_countdown()}}:
+\itemize{
+\item \code{"auto"} detects the best-matching group (built-ins + any overrides)
+\item \code{"vaccine"} or \code{"rmncah"} select built-ins (overrides still apply)
+\item \code{"custom"} uses \code{profile} (must exist after any inline registration)
+}
 }
 \details{
-This function first checks the file extension to determine the format, then reads
-the data accordingly. It supports both Excel and Stata (DTA) file formats commonly
-used for saving cleaned datasets.
+The actual \strong{group resolution} occurs in \code{\link[=new_countdown]{new_countdown()}}, using indicators
+\strong{from the loaded data}. If \code{profile} is a definition, it is registered via
+\code{\link[=register_indicator_group]{register_indicator_group()}} \strong{before} loading, so auto-detection considers it.
 }
 \examples{
 \dontrun{
-  # Load previously processed data from an RDS or DTA file
-  data <- load_data("processed_cd2030_data.dta", 'rmncah')
+# Built-in group (explicit)
+cd <- load_data("data/country.dta", indicator_group = "rmncah")
+attr(cd, "indicator_group")  # "rmncah"
+
+# Auto-detect among built-ins
+cd <- load_data("data/country.xlsx", indicator_group = "auto")
+
+# Inline extend rmncah, then auto-detect (merge by category)
+cd <- load_data(
+  "data/country.xlsx",
+  indicator_group = "auto",
+  profile = list(name = "rmncah", value = list(hiv = c("hiv_test","pmtct1"))),
+  on_conflict = "merge"
+)
+
+# Define a brand-new custom profile and select it
+cd <- load_data(
+  "data/country.xlsx",
+  indicator_group = "custom",
+  profile = list(my_profile = list(anc = c("anc1","anc4")))
+)
 }
 
 }

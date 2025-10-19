@@ -35,10 +35,8 @@ calculate_derived_coverage <- function(.data, indicator, base_year, region = NUL
   coverage_derived <- paste0(coverage, "derived")
   coverage_derived_col <- sym(coverage_derived)
 
-
   # Get relevant population column for DHIS2 (e.g., totpop_dhis2)
   dhis2_pop <- get_population_column(indicator, "dhis2")
-  print(paste0(indicator, ': ', dhis2_pop))
   dhis2_pop_col <- sym(dhis2_pop)
 
   penta1_denom <- get_population_column(indicator, "penta1")

@@ -1,56 +1,95 @@
-#' Load Processed Countdown 2030 Data from RDS or DTA File
+#' Load Countdown 2030 data (Excel or Stata)
 #'
-#' `load_data` loads processed Countdown 2030 data from a specified file, either in
-#' RDS or DTA format, and returns a tibble of class `cd_data`.
+#' Loads a cleaned dataset from an Excel (.xlsx/.xls) or Stata (.dta) file,
+#' optionally **registers** a profile override, and returns a tibble of class
+#' `cd_data`. Group selection is resolved from the data inside [new_countdown()]:
+#' - `"auto"` detects the best-matching group (built-ins + any overrides)
+#' - `"vaccine"` or `"rmncah"` select built-ins (overrides still apply)
+#' - `"custom"` uses `profile` (must exist after any inline registration)
 #'
-#' @param path A string. The path to the file containing the processed data
-#'   in either Excel or DTA format.
-#' @param indicator_group Required. One of `"rmncah"` or `"vaccine"`
-#' @param start_year An integer. The minimum year to filter the data (default is
-#'   NULL).
-#' @param admin_sheet_name A string. The name of the sheet containing administrative
-#'   data. Default is `"Admin_data"`.
-#' @param population_sheet_name A string. The name of the sheet containing population
-#'   data. Default is `"Population_data"`.
-#' @param reporting_sheet_name A string. The name of the sheet containing reporting
-#'   completeness data. Default is `"Reporting_completeness"`.
-#' @param service_sheet_names A vector of strings. The names of the sheets containing
-#'   service data. Default is `c("Service_data_1", "Service_data_2")`.
+#' @param path Path to `.xlsx`, `.xls`, or `.dta`.
+#' @param indicator_group One of `"auto"`, `"vaccine"`, `"rmncah"`, `"custom"`.
+#'   Default `"auto"`.
+#' @param profile Optional. Either a **name** (string) of an existing group, or a
+#'   **definition** to register inline before loading:
 #'
-#' @return A tibble of class `cd_data` containing the loaded data.
+#'   - explicit form: `list(name = "rmncah", value = list(hiv = c("hiv_test","pmtct1")))`
+#'   - compact form:  `list(hiv_profile = list(testing = c("hiv_test"), care = c("art_new")))`
+#'
+#'   For `"custom"`, the profile must resolve to **one** concrete name.
+#'
+#' @param on_conflict Conflict policy when `profile` is a definition:
+#'   one of `"replace"`, `"merge"`, or `"error"`. Default `"replace"`.
+#'   `"merge"` unions indicators per category.
+#' @param start_year Optional integer filter for minimum year.
+#' @param admin_sheet_name Excel sheet with admin data. Default `"Admin_data"`.
+#' @param population_sheet_name Excel sheet with population data. Default `"Population_data"`.
+#' @param reporting_sheet_name Excel sheet with reporting completeness. Default `"Reporting_completeness"`.
+#' @param service_sheet_names Character vector of service-data sheets.
+#'   Default: all sheets matching `"Service_data"` if not supplied.
+#'
+#' @return A tibble of class `cd_data`.
+#'
 #' @details
-#' This function first checks the file extension to determine the format, then reads
-#' the data accordingly. It supports both Excel and Stata (DTA) file formats commonly
-#' used for saving cleaned datasets.
+#' The actual **group resolution** occurs in [new_countdown()], using indicators
+#' **from the loaded data**. If `profile` is a definition, it is registered via
+#' [register_indicator_group()] **before** loading, so auto-detection considers it.
 #'
 #' @examples
 #' \dontrun{
-#'   # Load previously processed data from an RDS or DTA file
-#'   data <- load_data("processed_cd2030_data.dta", 'rmncah')
+#' # Built-in group (explicit)
+#' cd <- load_data("data/country.dta", indicator_group = "rmncah")
+#' attr(cd, "indicator_group")  # "rmncah"
+#'
+#' # Auto-detect among built-ins
+#' cd <- load_data("data/country.xlsx", indicator_group = "auto")
+#'
+#' # Inline extend rmncah, then auto-detect (merge by category)
+#' cd <- load_data(
+#'   "data/country.xlsx",
+#'   indicator_group = "auto",
+#'   profile = list(name = "rmncah", value = list(hiv = c("hiv_test","pmtct1"))),
+#'   on_conflict = "merge"
+#' )
+#'
+#' # Define a brand-new custom profile and select it
+#' cd <- load_data(
+#'   "data/country.xlsx",
+#'   indicator_group = "custom",
+#'   profile = list(my_profile = list(anc = c("anc1","anc4")))
+#' )
 #' }
 #'
 #' @export
 load_data <- function(path,
-                      indicator_group,
+                      indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
+                      profile = NULL,
+                      on_conflict = c('replace', 'merge', 'error'),
                       start_year = NULL,
-                      admin_sheet_name = "Admin_data",
-                      population_sheet_name = "Population_data",
-                      reporting_sheet_name = "Reporting_completeness",
-                      service_sheet_names = c("Service_data_1", "Service_data_2")) {
+                      admin_sheet_name = NULL,
+                      population_sheet_name = NULL,
+                      reporting_sheet_name = NULL,
+                      service_sheet_names = NULL) {
   check_file_path(path)
+  indicator_group <- arg_match(indicator_group)
+  on_conflict <- arg_match(on_conflict)
 
-  # validate group against immutable defaults
-  indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
-  set_selected_group(indicator_group)
+  # 1) Optionally register a dingle override before loading
+  ps <- .parse_profile(profile)
+  if (isTRUE(ps$needs_registration)) {
+    register_indicator_group(ps$name, ps$value, on_conflict = on_conflict)
+  }
 
-  # Determine file extension and load accordingly
+  profile_name <- ps$name %||% if (is_string(profile)) profile else NULL
+
+  # 2) Load raw data
   ext <- str_to_lower(tools::file_ext(path))
-  final_data <- if (ext %in% c('xlsx', 'xlsm', 'xls')) {
-    .load_excel_data(path, indicator_group, start_year,
+  final_data <- if (ext %in% c('xlsx', 'xls')) {
+    .load_excel_data(path, indicator_group, profile, profile_name, start_year,
                      admin_sheet_name, population_sheet_name,
-                     service_sheet_names, service_sheet_names)
+                     reporting_sheet_name, service_sheet_names)
   } else if (ext == 'dta') {
-    .load_master_dataset(path, indicator_group)
+    .load_master_dataset(path, indicator_group, profile, profile_name)
   } else {
     cd_abort(c("x" = "Unsupported file for load_data(). Use Excel or Stata"))
   }
@@ -59,59 +98,51 @@ load_data <- function(path,
 }
 
 
-#' Load Processed Countdown 2030 Data from RDS or DTA File
+#' Initialize or load a cached Countdown 2030 connection
 #'
-#' `load_data` loads processed Countdown 2030 data from a specified file, either in
-#' RDS or DTA format, and returns a tibble of class `cd_data`.
+#' Loads data via [load_data()] for Excel/Stata inputs, or initializes a cache
+#' from an `.rds`. Returns a cache/connection object.
 #'
-#' @param path A string. The path to the file containing the processed data
-#'   in either Excel or DTA format.
-#' @param indicator_group Required. One of `"rmncah"` or `"vaccine"`
-#' @param start_year An integer. The minimum year to filter the data (default is
-#'   NULL).
-#' @param admin_sheet_name A string. The name of the sheet containing administrative
-#'   data. Default is `"Admin_data"`.
-#' @param population_sheet_name A string. The name of the sheet containing population
-#'   data. Default is `"Population_data"`.
-#' @param reporting_sheet_name A string. The name of the sheet containing reporting
-#'   completeness data. Default is `"Reporting_completeness"`.
-#' @param service_sheet_names A vector of strings. The names of the sheets containing
-#'   service data. Default is `c("Service_data_1", "Service_data_2")`.
+#' @inheritParams load_data
+#' @param path Path to `.xlsx`, `.xls`, `.dta`, or `.rds`.
 #'
-#' @return A tibble of class `cd_data` containing the loaded data.
-#' @details
-#' This function first checks the file extension to determine the format, then reads
-#' the data accordingly. It supports both Excel and Stata (DTA) file formats commonly
-#' used for saving cleaned datasets.
+#' @return A cache/connection object as returned by `init_CacheConnection()`.
 #'
 #' @examples
 #' \dontrun{
-#'   # Load previously processed data from an RDS or DTA file
-#'   data <- load_data("processed_cd2030_data.dta", 'rmncah')
+#' # From Excel
+#' con <- load_cache_data("data/country.xlsx", indicator_group = "auto")
+#'
+#' # From Stata
+#' con <- load_cache_data("data/country.dta", indicator_group = "rmncah")
+#'
+#' # From pre-saved RDS
+#' con <- load_cache_data("data/cd_data.rds", indicator_group = "rmncah")
 #' }
 #'
 #' @export
 load_cache_data <- function(path,
-                            indicator_group,
+                            indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
+                            profile = NULL,
+                            on_conflict = c('replace', 'merge', 'error'),
                             start_year = NULL,
-                            admin_sheet_name = "Admin_data",
-                            population_sheet_name = "Population_data",
-                            reporting_sheet_name = "Reporting_completeness",
-                            service_sheet_names = c("Service_data_1", "Service_data_2")) {
+                            admin_sheet_name = NULL,
+                            population_sheet_name = NULL,
+                            reporting_sheet_name = NULL,
+                            service_sheet_names = NULL) {
   check_file_path(path)
-
-  # validate group against immutable defaults
-  indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
 
   # Determine file extension and load accordingly
   ext <- str_to_lower(tools::file_ext(path))
   final_data <- if (ext %in% c('xlsx', 'xls', 'dta')) {
-    data <- load_data(path, indicator_group, start_year, admin_sheet_name, population_sheet_name,
-                      service_sheet_names, service_sheet_names)
+    indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
+    on_conflict <- arg_match(on_conflict)
+    data <- load_data(path, indicator_group, profile, on_conflict, start_year,
+                      admin_sheet_name, population_sheet_name,service_sheet_names,
+                      service_sheet_names)
     return(init_CacheConnection(countdown_data = data))
   } else if (ext == 'rds') {
-    set_selected_group(indicator_group)
-    return(init_CacheConnection(rds_path = path))
+    return(init_CacheConnection(rds_path = path, indicator_group = indicator_group))
   } else {
     cd_abort(c("x" = "Unsupported file for load_data(). Use Excel, Cahe or Stata"))
   }
@@ -119,34 +150,24 @@ load_cache_data <- function(path,
   return(final_data)
 }
 
-#' Load Processed Countdown 2030 Data from RDS or DTA File
+#' Load processed master dataset (Stata .dta)
 #'
-#' `.load_master_dataset` loads processed Countdown 2030 data from a specified file, either in
-#' RDS or DTA format, and returns a tibble of class `cd_data`.
+#' Reads a Stata file, converts labelled columns to factors, then delegates to
+#' [new_countdown()] for validation and group resolution.
 #'
-#' @param path A string. The path to the file containing the processed data
-#'   in either RDS or DTA format.
-#' @param indicator_group Required. One of `"rmncah"` or `"vaccine"`
+#' @inheritParams load_data
+#' @param profile_name Internal. Normalized name extracted from `profile`.
 #'
-#' @return A tibble of class `cd_data` containing the loaded data.
-#' @details
-#' This function first checks the file extension to determine the format, then reads
-#' the data accordingly. It supports both RDS and Stata (DTA) file formats commonly
-#' used for saving processed datasets.
-#'
-#' @examples
-#' \dontrun{
-#'   # Load previously processed data from an RDS or DTA file
-#'   data <- load_data("processed_cd2030_data.dta", 'rmncah')
-#' }
-#'
+#' @return A tibble of class `cd_data`.
 #' @noRd
-.load_master_dataset <- function(path, indicator_group) {
+.load_master_dataset <- function(
+    path,
+    indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
+    profile = NULL,
+    profile_name = NULL
+) {
   check_file_path(path)
-
-  # validate group against immutable defaults
-  indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
-  set_selected_group(indicator_group)
+  indicator_group <- arg_match(indicator_group)
 
   # Determine file extension and load accordingly
   ext <- tools::file_ext(path)
@@ -159,53 +180,34 @@ load_cache_data <- function(path,
   out <- read_dta(path) %>%
     mutate(across(where(is.labelled), as_factor))
 
-  new_countdown(out)
+  new_countdown(out, indicator_group = indicator_group, profile = profile, profile_name = profile_name)
 }
 
-#' Load and Clean Countdown 2030 Excel Data
+#' Read & clean Countdown 2030 Excel sheets
 #'
-#' `.load_excel_data` reads specified sheets from an Excel file, cleans the data,
-#' and outputs a tibble of class `cd_data`.
+#' Reads the specified sheets, applies standard cleaning, merges, and returns a
+#' tibble. Group selection is not performed here; see [new_countdown()].
 #'
-#' @param path A string. The path to the Excel file to be loaded.
-#' @param indicator_group Required. One of `"rmncah"` or `"vaccine"`
-#' @param start_year An integer. The minimum year to filter the data (default is
-#'   NULL).
-#' @param admin_sheet_name A string. The name of the sheet containing administrative
-#'   data. Default is `"Admin_data"`.
-#' @param population_sheet_name A string. The name of the sheet containing population
-#'   data. Default is `"Population_data"`.
-#' @param reporting_sheet_name A string. The name of the sheet containing reporting
-#'   completeness data. Default is `"Reporting_completeness"`.
-#' @param service_sheet_names A vector of strings. The names of the sheets containing
-#'   service data. Default is `c("Service_data_1", "Service_data_2")`.
-#'
-#' @return A tibble of class `cd_data`, containing cleaned and processed data.
-#' @details
-#' This function is designed to handle Countdown 2030 data sheets by ensuring each
-#' sheet is properly loaded, standardized, and merged into a single tibble. It performs
-#' checks for duplicates, cleans up formatting issues, and verifies the presence of
-#' expected columns.
-#'
-#' @examples
-#' \dontrun{
-#'   # Load and clean data from a Countdown 2030 Excel file
-#'   data <- load_excel_data("countdown2030_data.xlsx")
-#' }
-#'
+#' @inheritParams load_data
+#' @return A cleaned tibble.
 #' @noRd
 .load_excel_data <- function(path,
-                            indicator_group,
+                            indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
+                            profile = NULL,
+                            profile_name = NULL,
                             start_year = NULL,
-                            admin_sheet_name = "Admin_data",
-                            population_sheet_name = "Population_data",
-                            reporting_sheet_name = "Reporting_completeness",
-                            service_sheet_names = c("Service_data_1", "Service_data_2")) {
+                            admin_sheet_name = NULL,
+                            population_sheet_name = NULL,
+                            reporting_sheet_name = NULL,
+                            service_sheet_names = NULL) {
   check_file_path(path)
+  indicator_group <- arg_match(indicator_group)
 
-  # validate group against immutable defaults
-  indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
-  set_selected_group(indicator_group)
+  admin_sheet_name <-  admin_sheet_name %||% 'Admin_data'
+  population_sheet_name <- population_sheet_name %||% 'Population_data'
+  reporting_sheet_name <- reporting_sheet_name %||% 'Reporting_completeness'
+  ex_sheets <- excel_sheets(path)
+  service_sheet_names <- service_sheet_names %||% ex_sheets[grepl('Service_data', ex_sheets)]
 
   # Combine all sheet names
   sheet_names <- c(service_sheet_names, reporting_sheet_name, population_sheet_name, admin_sheet_name)
@@ -235,8 +237,10 @@ load_cache_data <- function(path,
     service_data = c("district", "year", "month")
   )
 
+  excel_name <- basename(path)
+
   # Log and load each sheet with basic cleaning steps
-  cd_info(c("i" = str_glue("Loading Excel {.val {basename(path)}} for `{.arg {indicator_group}}`")))
+  cd_info(c("i" = "Loading Excel {.val {excel_name}} for `{.arg {indicator_group}}`"))
   parts <- map(sheet_names, ~ suppressMessages(
     read_and_clean_sheet(path, .x, sheet_ids, start_year)
   ))
@@ -249,52 +253,46 @@ load_cache_data <- function(path,
 
   cd_info(c("i" = "Successfully loaded and cleaned data"), )
 
-  new_countdown(data)
+  new_countdown(out, indicator_group = indicator_group, profile = profile, profile_name = profile_name)
 }
 
-#' Create Countdown 2030 Data Object
+#' Create a `cd_data` object from cleaned data and resolve the indicator group
 #'
-#' The `new_countdown` function converts cleaned and processed data into a tibble of
-#' class `cd_data`, with additional validation and metadata for analysis within
-#' the Countdown 2030 framework.
+#' Validates required columns, resolves the concrete indicator group name from
+#' the **data** (`"auto"` detection supported), ensures the selected group's
+#' indicators are fully present, sets the global selection, and returns a `cd_data`.
 #'
-#' @param .data A tibble. The cleaned and processed data to be converted to
-#'   `cd_data` class.
-#' @param class Optional. A character vector specifying additional classes to assign
-#'   to the resulting tibble.
+#' @param .data Tibble after cleaning/merge.
+#' @param indicator_group One of `"auto"`, `"vaccine"`, `"rmncah"`, `"custom"`.
+#' @param profile For `"custom"`, the group name to select (must exist). Ignored otherwise.
 #'
-#' @return A tibble of class `cd_data`, containing an `indicator_groups` attribute
-#'   that includes validated indicator groups available in the dataset, categorized
-#'   for analysis.
-#'
-#' @details
-#' This function attaches metadata to the data for available indicator groups by
-#' validating each group against the column names in the provided tibble. Indicator
-#' groups represent categories of data relevant to Countdown 2030 analysis:
-#'
-#'   - **`anc`**: Antenatal care indicators (e.g., `anc1`)
-#'   - **`idelv`**: Delivery and birth outcome indicators (e.g., `ideliv`, `instlivebirths`)
-#'   - **`vacc`**: Vaccination indicators (e.g., `opv1`, `penta1`, `measles1`)
-#'
-#' Additionally, `tracers` are specified to track core indicators, such as vaccination
-#' rates, within `cd_data`.
-#'
-#' Any required columns missing from the input data will trigger an error, with a
-#' message indicating which columns are missing.
+#' @return A tibble with class `cd_data` and `attr(, "indicator_group")` set to
+#'   the resolved name. Also sets `options(cd2030.selected_group)` via [set_selected_group()].
 #'
 #' @examples
 #' \dontrun{
-#' # Convert processed data to `cd_data` class for Countdown 2030 analysis
-#' cd_data <- new_countdown(final_data)
+#' x <- .load_excel_data("data/country.xlsx", indicator_group = "auto")
+#' cd <- new_countdown(x, indicator_group = "auto")
+#' attr(cd, "indicator_group")
 #' }
 #'
-#' @seealso [adjust_service_data()] for adjusting service data within the
-#'   `cd_data` object.
-#'
 #' @export
-new_countdown <- function(.data, class = NULL) {
+new_countdown <- function(
+    .data,
+    class = NULL,
+    indicator_group = c("auto","vaccine","rmncah","custom"),
+    profile_name = NULL,
+    profile = NULL
+) {
 
-  check_required_columns_exist(.data)
+  check_required(.data)
+
+  column_names <- colnames(.data)
+
+  resolved_group <- resolve_indicator_group(column_names, indicator_group, profile_name)
+  check_required_columns_exist(.data, resolved_group)
+
+  set_selected_group(resolved_group)
 
   country_name <- .data %>%
     distinct(country) %>%
@@ -307,6 +305,8 @@ new_countdown <- function(.data, class = NULL) {
     .data,
     country = country$alternate,
     iso3 = as.character(country$iso3),
+    indicator_group = indicator_group,
+    profile = profile,
     class = c(class, "cd_data")
   )
 }
@@ -733,3 +733,103 @@ match_country <- function(country_name, call = caller_call()) {
     )
   }
 }
+
+#' Parse a single profile argument (name or inline definition)
+#'
+#' Accepts either:
+#' - **String name** of an existing/target profile (no registration needed)
+#' - **Explicit spec**: `list(name = "my_profile", value = <named list of character vectors>)`
+#' - **Compact spec**:  `list(my_profile = <named list of character vectors>)`
+#'
+#' Returns a small list with:
+#' - `name`: profile name (character scalar)
+#' - `value`: profile definition (named list) or `NULL`
+#' - `needs_registration`: `TRUE` if `value` is present and should be registered,
+#'   otherwise `FALSE`.
+#'
+#' Reserved names `"auto"` and `"custom"` are disallowed for registration; they
+#' may appear as plain names only to control selection mode upstream.
+#'
+#' @param profile A string (name) or a list spec (explicit/compact). See Details.
+#'
+#' @return A list: `list(name, value, needs_registration)`.
+#'
+#' @examples
+#' # Name only (no registration)
+#' .parse_profile("rmncah")
+#'
+#' # Explicit spec (register then use)
+#' .parse_profile(list(
+#'   name  = "rmncah",
+#'   value = list(hiv = c("hiv_test","pmtct1"))
+#' ))
+#'
+#' # Compact spec (register then use)
+#' .parse_profile(list(
+#'   hiv_profile = list(
+#'     testing = c("hiv_test","pmtct1"),
+#'     care    = c("art_new","art_current")
+#'   )
+#' ))
+#'
+#' @noRd
+.parse_profile <- function(profile) {
+  # nothing provided
+  if (is.null(profile)) {
+    return(list(name = NULL, value = NULL, needs_registration = FALSE))
+  }
+
+  # string → name only (no registration)
+  if (rlang::is_string(profile)) {
+    return(list(name = profile, value = NULL, needs_registration = FALSE))
+  }
+
+  # explicit spec: list(name=..., value=<named list>)
+  if (is.list(profile) && rlang::is_named(profile) && all(c("name","value") %in% names(profile))) {
+    nm  <- profile$name
+    val <- profile$value
+
+    if (!rlang::is_string(nm) || !nzchar(nm)) {
+      cd_abort(c("x" = "{.arg profile$name} must be a non-empty string"))
+    }
+    if (!is.list(val) || !rlang::is_named(val)) {
+      cd_abort(c("x" = "{.arg profile$value} must be a named list of categories → character vectors"))
+    }
+    bad <- purrr::map_lgl(val, ~ !is.character(.x) || anyNA(.x))
+    if (any(bad)) {
+      cd_abort(c("x" = "Each category in {.arg profile$value} must be a character vector"))
+    }
+
+    if (nm %in% c("auto","custom")) {
+      cd_abort(c("x" = "Profile name cannot be 'auto' or 'custom' when registering a definition"))
+    }
+
+    return(list(name = nm, value = val, needs_registration = TRUE))
+  }
+
+  # compact spec: list(<name> = <named categories list>)
+  if (is.list(profile) && length(profile) == 1L && rlang::is_named(profile)) {
+    nm  <- names(profile)[1]
+    val <- profile[[1]]
+
+    if (!nzchar(nm)) {
+      cd_abort(c("x" = "Compact {.arg profile} must use a non-empty name"))
+    }
+    if (!is.list(val) || !rlang::is_named(val)) {
+      cd_abort(c("x" = "Compact {.arg profile} must be list(<name> = <named categories list>)"))
+    }
+    bad <- purrr::map_lgl(val, ~ !is.character(.x) || anyNA(.x))
+    if (any(bad)) {
+      cd_abort(c("x" = "Each category in compact {.arg profile} must be a character vector"))
+    }
+
+    if (nm %in% c("auto","custom")) {
+      cd_abort(c("x" = "Profile name cannot be 'auto' or 'custom' when registering a definition"))
+    }
+
+    return(list(name = nm, value = val, needs_registration = TRUE))
+  }
+
+  cd_abort(c("x" = "Unsupported {.arg profile} shape. Use a string, an explicit spec, or a compact spec."))
+}
+

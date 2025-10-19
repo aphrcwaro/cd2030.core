@@ -14,4 +14,3 @@
     lockBinding(".cd2030_indicator_groups", ns)
   }
 }
-

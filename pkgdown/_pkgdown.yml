@@ -7,14 +7,60 @@ template:
     primary: "#0054AD"
     border-radius: 0.5rem
     btn-border-radius: 0.25rem
+  includes:
+    in_header: |
+      <meta name="description" content="cd2030.core — Countdown 2030 data import, quality assessment, adjustment, coverage, mortality and reporting tools." />
+
+navbar:
+  structure:
+    left:  [reference, articles, news]
+    right: [search, github]
+  components:
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Articles
+      menu:
+      - text: Getting started
+        href: articles/getting-started.html
+      - text: Workflow overview
+        href: articles/workflow.html
+    news:
+      text: Changelog
+      href: news/index.html
+    github:
+      icon: fab fa-github
+      aria-label: "GitHub repository"
+      href: https://github.com/aphrcwaro/cd2030.core
+
+home:
+  title: "cd2030.core"
+  description: >
+    Core tools for importing, validating, adjusting, and analysing Countdown 2030 country data.
+  links:
+  - text: Get started
+    href: articles/getting-started.html
+  - text: Reference
+    href: reference/index.html
 
 reference:
-  - title: "Data Import and Setup"
+  - title: "Data Import & Preparation"
     desc: >
-      To load and prepare the initial data required for analysis.
+      Functions to load, register profiles, and prepare Countdown 2030 input data.
     contents:
       - load_data
-      - load_excel_data
+      - load_cache_data
+      - new_countdown
+      - save_data
+      - save_dhis2_excel
+      - save_dhis2_master_data
+      - get_dhis2_hfd
+
+  - title: "External Data Sources"
+    desc: >
+      Import relevant global datasets to complement national data.
+    contents:
       - load_un_estimates
       - load_un_mortality_data
       - load_wuenic_data
@@ -23,178 +69,194 @@ reference:
       - load_fpet_data
       - load_private_sector_data
       - load_csection_estimates
-      - save_data
-      - save_dhis2_excel
-      - save_dhis2_master_data
-      - get_dhis2_hfd
+
+
+  - title: "Indicator Group Management"
+    desc: >
+      Manage indicator groups (profiles) including overrides and custom profiles.
+    contents:
+      - get_indicator_groups
+      - list_indicator_groups
+      - set_selected_group
+      - get_selected_group
+      - register_indicator_group
+      - get_indicator_group_names
+      - reset_indicator_group
+      - detect_indicator_group
 
   - title: "Data Quality Assessment"
     desc: >
-      To check the completeness and consistency of data, ensuring its readiness for analysis.
+      Assess completeness, consistency, and reliability of routine data.
 
-  - subtitle: "Reporting Rate"
+  - subtitle: "Reporting Rates"
     contents:
-    - calculate_average_reporting_rate
-    - calculate_district_reporting_rate
-    - plot.cd_average_reporting_rate
-    - plot.cd_district_reporting_rate
-    - tbl_sum.cd_average_reporting_rate
-    - tbl_sum.cd_district_reporting_rate
+      - calculate_average_reporting_rate
+      - calculate_district_reporting_rate
+      - plot.cd_average_reporting_rate
+      - plot.cd_district_reporting_rate
+      - tbl_sum.cd_average_reporting_rate
+      - tbl_sum.cd_district_reporting_rate
 
-
-  - subtitle: "Date Completeness"
+  - subtitle: "Data Completeness"
     contents:
-    - calculate_completeness_summary
-    - calculate_district_completeness_summary
-    - plot.cd_completeness_summary
-    - tbl_sum.cd_completeness_summary
-    - tbl_sum.cd_district_completeness_summary
+      - calculate_completeness_summary
+      - calculate_district_completeness_summary
+      - plot.cd_completeness_summary
+      - tbl_sum.cd_completeness_summary
+      - tbl_sum.cd_district_completeness_summary
 
   - subtitle: "Consistency Checks"
     contents:
-    - plot_comparison
-    - plot_comparison_anc1_penta1
-    - plot_comparison_penta1_penta3
-    - plot_comparison_opv1_opv3
-    - plot_comparison.cd_data
+      - plot_comparison
+      - plot_comparison_anc1_penta1
+      - plot_comparison_penta1_penta3
+      - plot_comparison_opv1_opv3
+      - plot_comparison.cd_data
 
-  - subtitle: "Outlier detection"
+  - subtitle: "Outlier Detection"
     contents:
-    - calculate_outliers_summary
-    - calculate_district_outlier_summary
-    - list_outlier_units
-    - plot.cd_outlier
-    - plot.cd_outlier_list
-    - tbl_sum.cd_outliers_summary
-    - tbl_sum.cd_district_outliers_summary
+      - calculate_outliers_summary
+      - calculate_district_outlier_summary
+      - filter_adjustment_value
+      - list_outlier_units
+      - plot.cd_outlier
+      - plot.cd_outlier_list
+      - tbl_sum.cd_outliers_summary
+      - tbl_sum.cd_district_outliers_summary
 
-  - subtitle: "Calculate Ratios"
+  - subtitle: "Ratio Analysis"
     contents:
-    - calculate_ratios_summary
-    - calculate_district_ratios_summary
-    - plot.cd_ratios_summary
-    - tbl_sum.cd_ratios_summary
-    - tbl_sum.cd_district_ratios_summary
+      - calculate_ratios_summary
+      - calculate_district_ratios_summary
+      - plot.cd_ratios_summary
+      - tbl_sum.cd_ratios_summary
+      - tbl_sum.cd_district_ratios_summary
 
-  - subtitle: "Overall Score"
+  - subtitle: "Overall Quality Score"
     contents:
-    - calculate_overall_score
+      - calculate_overall_score
 
   - title: "Data Adjustment"
     desc: >
-      To adjust for issues like incomplete reporting and extreme outliers, improving data quality
+      Adjust for incomplete reporting and handle extreme values for improved estimates.
     contents:
-    - filter_out_years
-    - generate_adjustment_values
-    - adjust_service_data
-    - plot.cd_adjustment_values
-    - tbl_sum.cd_adjustment_values
+      - filter_out_years
+      - generate_adjustment_values
+      - adjust_service_data
+      - plot.cd_adjustment_values_filtered
+      - tbl_sum.cd_adjustment_values
 
   - title: "Denominator Assessment"
     desc: >
-      To determine suitable population-based denominators for calculating coverage rates
+      Compute populations and denominators required for coverage calculations.
     contents:
-    - compute_indicator_numerator
-    - prepare_population_metrics
-    - calculate_indicator_coverage
-    - filter_indicator_coverage
-    - calculate_threshold
-    - filter_high_performers
-    - calculate_derived_coverage
-    - plot_line_graph
-    - plot.cd_indicator_coverage
-    - plot.cd_indicator_coverage_filtered
-    - plot.cd_population_metrics
-    - plot.cd_derived_coverage
-    - tbl_sum.cd_indicator_coverage
-    - tbl_sum.cd_national_denominators
+      - compute_indicator_numerator
+      - prepare_population_metrics
+      - calculate_indicator_coverage
+      - filter_indicator_coverage
+      - calculate_threshold
+      - filter_high_performers
+      - calculate_derived_coverage
+      - plot_line_graph
+      - plot.cd_indicator_coverage
+      - plot.cd_indicator_coverage_filtered
+      - plot.cd_population_metrics
+      - plot.cd_derived_coverage
+      - tbl_sum.cd_indicator_coverage
+      - tbl_sum.cd_national_denominators
 
-  - title: "Calculate Coverage"
+  - title: "Coverage & Inequality"
     desc: >
-      To determine the coverage of various indicators
+      Estimate coverage levels and inequity by geography and subgroup.
     contents:
-    - calculate_coverage
-    - filter_coverage
-    - plot.cd_coverage_filtered
-    - calculate_inequality
-    - filter_inequality
-    - plot.cd_inequality_filtered
-    - get_mapping_data
-    - filter_mapping_data
-    - get_country_shapefile
-    - plot.cd_mapping_filtered
-    - equiplot
-    - equiplot_area
-    - equiplot_education
-    - equiplot_wealth
+      - calculate_coverage
+      - filter_coverage
+      - calculate_inequality
+      - filter_inequality
+      - equiplot
+      - equiplot_area
+      - equiplot_education
+      - equiplot_wealth
+      - plot.cd_coverage_filtered
+      - plot.cd_inequality_filtered
+      - get_mapping_data
+      - filter_mapping_data
+      - get_country_shapefile
+      - plot.cd_mapping_filtered
 
-  - title: "Calculate Mortality Metrics"
+  - title: "Mortality Analysis"
     desc: >
-      To calculate the quality of mortality data
+      Summarize and explore mortality patterns from administrative and survey data.
     contents:
-    - create_mortality_summary
-    - create_mortality_ratios
-    - filter_mortality_summary
-    - summarise_completeness_ratio
-    - plot.cd_mortality_summary
-    - plot.cd_mortality_summary_filtered
-    - plot.cd_mortality_ratio_summarised
+      - create_mortality_summary
+      - create_mortality_ratios
+      - filter_mortality_summary
+      - summarise_completeness_ratio
+      - plot.cd_mortality_summary
+      - plot.cd_mortality_summary_filtered
+      - plot.cd_mortality_ratio_summarised
 
-  - title: "Calculate Health Utilization Metrics"
+  - title: "Health Service Utilization"
     desc: >
-      To Calculate National and Sub-national metric of how services are Utilize
+      Analyze use of health services and trends over time.
     contents:
-    - compute_service_utilization
-    - filter_service_utilization
-    - filter_service_utilization_map
-    - prepare_private_sector_plot_data
-    - get_excel_version
-    - plot.cd_service_utilization_map
-    - plot.cd_service_utilization_filtered
-    - plot.cd_private_sector_plot_data
+      - compute_service_utilization
+      - filter_service_utilization
+      - filter_service_utilization_map
+      - prepare_private_sector_plot_data
+      - get_excel_version
+      - plot.cd_service_utilization_map
+      - plot.cd_service_utilization_filtered
+      - plot.cd_private_sector_plot_data
 
-  - title: "Calculate Health System Metrics"
+  - title: "Health System Performance"
+    desc: >
+      Generate national and sub-national service readiness metrics.
     contents:
-    - calculate_health_system_metrics
-    - calculate_health_system_comparison
-    - plot.cd_health_system_metric
-    - plot.cd_health_system_comparison
-    - plot_national_health_metric
+      - calculate_health_system_metrics
+      - calculate_health_system_comparison
+      - plot.cd_health_system_metric
+      - plot.cd_health_system_comparison
+      - plot_national_health_metric
 
-  - title: "Family Planning"
+  - title: "Family Planning (FPET)"
+    desc: >
+      Generate and interpret FPET (Family Planning Estimation Tool) estimates.
     contents:
-    - generate_fpet_summary
-    - interpret
-    - plot.cd_fpet
-    - interpret.cd_fpet
+      - generate_fpet_summary
+      - interpret
+      - plot.cd_fpet
+      - interpret.cd_fpet
 
   - title: "Reporting"
     desc: >
-      To document findings, generate summaries, and create exportable formats for sharing and presentation
+      Document findings, generate summaries, and export shareable outputs.
     contents:
-    - dashboard
-    - generate_report
+      - generate_report
 
-  - title: "Other Functions"
+  - title: "Utility Functions"
+    desc: >
+      Utility helpers used internally or across workflows.
     contents:
-    - add_outlier5std_column
-    - add_mad_med_columns
-    - add_missing_column
-    - get_all_indicators
-    - get_country_iso3
-    - get_country_name
-    - get_indicator_groups
-    - get_indicator_group_names
-    - get_named_indicators
-    - get_population_column
-    - get_indicator_without_opd_ipd
-    - get_admin_columns
-    - get_plot_admin_column
-    - is_maternal_indicator
-    - robust_max
-    - new_countdown
-    - print.cd_data
-    - with_cd_quiet
-    - clean_error_message
-    - CacheConnection
-    - init_CacheConnection
+      - add_outlier5std_column
+      - add_mad_med_columns
+      - add_missing_column
+      - get_all_indicators
+      - get_country_iso3
+      - get_country_name
+      - get_named_indicators
+      - get_population_column
+      - get_indicator_without_opd_ipd
+      - get_admin_columns
+      - get_plot_admin_column
+      - is_maternal_indicator
+      - robust_max
+      - print.cd_data
+      - with_cd_quiet
+      - clean_error_message
+      - CacheConnection
+      - init_CacheConnection
+
+authors:
+  "APHRC":
+    href: https://www.aphrc.org

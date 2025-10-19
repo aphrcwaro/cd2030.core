@@ -81,12 +81,14 @@ prepare_population_metrics <- function(.data,
     distinct(district, adminlevel_1, year, .keep_all = TRUE) %>%
     mutate(
       totpop_dhis2 = sum(pop_dhis2, na.rm = TRUE) / 1000,
+      totbirths_dhis2 = sum(allbirths_dhis2, na.rm = TRUE),
       totlivebirths_dhis2 = sum(livebirths_dhis2, na.rm = TRUE) / 1000,
       totunder1_dhis2 = sum(under1_dhis2, na.rm = TRUE),
       .by = all_of(group_vars)
     ) %>%
     summarise(
       totpop_dhis2 = robust_max(totpop_dhis2),
+      totbirths_dhis2 = robust_max(totbirths_dhis2),
       totlivebirths_dhis2 = robust_max(totlivebirths_dhis2),
       totunder1_dhis2 = robust_max(totunder1_dhis2),
       .by = all_of(group_vars)
@@ -103,7 +105,7 @@ prepare_population_metrics <- function(.data,
   # Define the desired order for final output
   desired_order <- c(
     "iso3", "adminlevel_1", "district", "year", "un_population",
-    "totpop_dhis2", "un_births", "totlivebirths_dhis2", "totunder1_dhis2", "un_popgrowth"
+    "totpop_dhis2", "un_births", 'totbirths_dhis2', "totlivebirths_dhis2", "totunder1_dhis2", "un_popgrowth"
   )
 
   # Finalize the data structure

@@ -9,13 +9,29 @@
 #' @return An instance of the `CacheConnection` class.
 #'
 #' @export
-init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL) {
+init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, indicator_group = c('auto', 'rmncah', 'vaccine', 'custom')) {
+  indicator_group <- arg_match(indicator_group)
   cache <- CacheConnection$new(
     rds_path = rds_path,
     countdown_data = countdown_data
   )
 
-  check_required_columns_exist(cache$countdown_data)
+  profile <- attr_or_null(cache$countdown_data, 'profile')
+  if (!is.null(profile)) {
+    ps <- .parse_profile(profile)
+    if (isTRUE(ps$needs_registration)) {
+      register_indicator_group(ps$name, ps$value, on_conflict = on_conflict)
+    }
+  }
+
+  resolved_group <- attr_or_null(cache$countdown_data, 'indicator_group')
+  if (is.null(resolved_group)) {
+    cols <- colnames(cache$countdown_data)
+    resolved_group <- resolve_indicator_group(cols, indicator_group)
+  }
+
+  check_required_columns_exist(cache$countdown_data, resolved_group)
+  set_selected_group(resolved_group)
 
   return(cache)
 }

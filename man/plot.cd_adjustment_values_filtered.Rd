@@ -29,7 +29,7 @@ A ggplot2 object showing the comparison of unadjusted and adjusted data
 for the specified indicator over time.
 }
 \description{
-\code{plot.cd_adjustment_values} creates a bar plot to compare the unadjusted (raw)
+\code{plot.cd_adjustment_values_filtered} creates a bar plot to compare the unadjusted (raw)
 and adjusted values of health indicators over time. It allows users to specify
 the indicator prefix and customize legend labels for flexibility across different
 health data.
@@ -44,10 +44,10 @@ the actual unadjusted and adjusted values side-by-side for each year.
 \examples{
 \dontrun{
 # Using default legend labels and title
-plot.cd_adjustment_values(adjustments, indicator = "ideliv")
+plot.cd_adjustment_values_filtered(adjustments, indicator = "ideliv")
 
 # Custom legend labels and title
-plot.cd_adjustment_values(adjustments,
+plot.cd_adjustment_values_filtered(adjustments,
   indicator = "instlivebirths",
   title = "Customized Title",
   legend_labels = c("Original", "Modified")

@@ -4,7 +4,11 @@
 \alias{init_CacheConnection}
 \title{Create a CacheConnection Object}
 \usage{
-init_CacheConnection(rds_path = NULL, countdown_data = NULL)
+init_CacheConnection(
+  rds_path = NULL,
+  countdown_data = NULL,
+  indicator_group = c("auto", "rmncah", "vaccine", "custom")
+)
 }
 \arguments{
 \item{rds_path}{Optional character. Path to an RDS file to load the cache from.}
