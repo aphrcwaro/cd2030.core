@@ -141,7 +141,7 @@ register_indicator_group <- function(name, value, on_conflict = c('replace', 'me
 
   exists_now <- name %in% names(.get_all_groups())
   if (exists_now && identical(on_conflict, 'error')) {
-    cd_abort(c('x' = str_glue('Indicator group {.arg name} already exists')))
+    cd_abort(c('x' = 'Indicator group {.arg name} already exists'))
   }
 
   if (identical(on_conflict, 'replace') || !exists_now) {

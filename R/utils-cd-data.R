@@ -20,7 +20,7 @@
 attr_or_abort <- function(.data, attr_name) {
   value <- attr(.data, attr_name)
   if (is.null(value)) {
-    cd_abort(c("x" = str_glue("Missing attribute: {attr_name}")))
+    cd_abort(c("x" = "Missing attribute: {attr_name}"))
   }
   value
 }

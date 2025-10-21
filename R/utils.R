@@ -22,7 +22,7 @@ check_required_columns_exist <- function(.data, resolved_group, call = caller_en
   if (length(missing_cols) > 0) {
     cd_abort(
       c(
-        "x" = str_glue("Data does not contain all indicators for group '{resolved_group}'."),
+        "x" = "Data does not contain all indicators for group '{resolved_group}'.",
         "!" = '{.field {paste(missing_cols, collapse = ", ")}}'
       ),
       call = call
