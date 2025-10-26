@@ -33,7 +33,7 @@
 #' @export
 calculate_overall_score <- function(.data,
                                     threshold,
-                                    ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3")),
+                                    ratio_pairs = NULL,
                                     region = NULL) {
 
   year = mean_rr = low_mean_rr = mean_mis_vacc_tracer = mean_out_vacc_tracer =
@@ -41,49 +41,58 @@ calculate_overall_score <- function(.data,
 
   check_cd_data(.data)
 
+  selected_group <- get_selected_group()
+
   avg_reporting_rate <- calculate_average_reporting_rate(.data, 'adminlevel_1', region = region) %>%
-    # select(year, mean_four_rr) %>%
-    summarise(mean_four_rr = mean(mean_four_rr, na.rm = TRUE), .by = year) %>%
-    pivot_wider(names_from = year, values_from = mean_four_rr) %>%
+    summarise(mean_rr = mean(mean_rr, na.rm = TRUE), .by = year) %>%
+    pivot_wider(names_from = year, values_from = mean_rr) %>%
     mutate(
       `Data Quality Metrics` = "% of expected monthly facility reports (national)",
       no = "1a"
     )
 
   district_reporting_rate <- calculate_district_reporting_rate(.data, threshold = threshold, region = region) %>%
-    select(year, low_mean_four_rr) %>%
-    pivot_wider(names_from = year, values_from = low_mean_four_rr) %>%
+    select(year, low_mean_rr) %>%
+    pivot_wider(names_from = year, values_from = low_mean_rr) %>%
     mutate(
       `Data Quality Metrics` = paste0("% of districts with completeness of facility reporting >= ", threshold),
       no = "1b"
     )
 
+  district_completeness_column <- switch (
+    selected_group,
+    vaccine = 'mean_mis_vacc_tracer',
+    rmncah = 'mean_mis_all'
+  )
+  district_completeness_header <- switch (
+    selected_group,
+    vaccine = '% of districts with no missing values (mean for common vaccines)',
+    rmncah = '% of districts with no missing values for the 4 forms'
+  )
   district_completeness <- calculate_district_completeness_summary(.data, region = region) %>%
-    # select(year, mean_mis_vacc_tracer) %>%
-    # pivot_wider(names_from = year, values_from = mean_mis_vacc_tracer) %>%
-    select(year, mean_mis_four) %>%
-    pivot_wider(names_from = year, values_from = mean_mis_four) %>%
+    select(year, !!sym(district_completeness_column)) %>%
+    pivot_wider(names_from = year, values_from = !!sym(district_completeness_column)) %>%
     mutate(
-      `Data Quality Metrics` = "% of districts with no missing values for the 4 forms",
+      `Data Quality Metrics` = district_completeness_header,
       no = "1c"
     )
 
   outliers <- calculate_outliers_summary(.data, admin_level = 'adminlevel_1', region = region) %>%
-    # select(year, mean_out_vacc_tracer) %>%
-    # pivot_wider(names_from = year, values_from = mean_out_vacc_tracer) %>%
-    # select(year, mean_out_four) %>%
-    summarise(mean_out_four = mean(mean_out_four, na.rm = TRUE), .by = year) %>%
-    pivot_wider(names_from = year, values_from = mean_out_four) %>%
+    summarise(mean_out_all = mean(mean_out_all, na.rm = TRUE), .by = year) %>%
+    pivot_wider(names_from = year, values_from = mean_out_all) %>%
     mutate(
       `Data Quality Metrics` = "% of monthly values that are not extreme outliers (national)",
       no = "2a"
     )
 
+  district_outliers_column <- switch (
+    selected_group,
+    vaccine = 'mean_out_vacc_only',
+    rmncah = 'mean_out_all'
+  )
   outliersd <- calculate_district_outlier_summary(.data, region = region) %>%
-    # select(year, mean_out_vacc_tracer) %>%
-    # pivot_wider(names_from = year, values_from = mean_out_vacc_tracer) %>%
-    select(year, mean_out_four) %>%
-    pivot_wider(names_from = year, values_from = mean_out_four) %>%
+    select(year, !!sym(district_outliers_column)) %>%
+    pivot_wider(names_from = year, values_from = !!sym(district_outliers_column)) %>%
     mutate(
       `Data Quality Metrics` = "% of districts with no extreme outliers in the year",
       no = "2b"
@@ -94,12 +103,23 @@ calculate_overall_score <- function(.data,
     pivot_longer(-year, names_to = "Data Quality Metrics", values_to = "value") %>%
     pivot_wider(names_from = year, values_from = value) %>%
     mutate(
-      no = case_match(
-        `Data Quality Metrics`,
-        "Ratio anc1/penta1" ~ "3a",
-        "Ratio penta1/penta3" ~ "3b",
-        "% district with anc1/penta1 in expected ranged" ~ "3c",
-        "% district with penta1/penta3 in expected ranged" ~ "3d"
+      no = case_when(
+        selected_group == 'vaccine' ~ case_match(
+          `Data Quality Metrics`,
+          'Ratio anc1/penta1'~ '3a',
+          'Ratio penta1/penta3' ~ '3b',
+          'Ratio opv1/opv3' ~ '3c',
+          '% district with anc1/penta1 in expected ranged' ~ '3f',
+          '% district with penta1/penta3 in expected ranged' ~ '3g',
+          '% district with opv1/opv3 in expected ranged' ~ '3h'
+        ),
+        selected_group == 'rmncah' ~ case_match(
+          `Data Quality Metrics`,
+          "Ratio anc1/penta1" ~ "3a",
+          "Ratio penta1/penta3" ~ "3b",
+          "% district with anc1/penta1 in expected ranged" ~ "3c",
+          "% district with penta1/penta3 in expected ranged" ~ "3d"
+        )
       )
     )
 
@@ -114,7 +134,7 @@ calculate_overall_score <- function(.data,
     relocate(no, `Data Quality Metrics`)
 
   mean_row <- final_data %>%
-    filter(no %in% c("1a", "1b", "2a", "2b", "3c", "3d")) %>%
+    filter(no %in% c("1a", "1b", "2a", "2b", "3c", "3d", '3f', '3g', '3h')) %>%
     summarise(across(starts_with("20"), mean, na.rm = TRUE)) %>%
     mutate(
       `Data Quality Metrics` = "Annual data quality score",

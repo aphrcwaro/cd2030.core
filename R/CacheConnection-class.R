@@ -476,7 +476,10 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set performance threshold.
     #' @param value A numeric scalar.
-    set_performance_threshold = function(value) private$setter('performance_threshold', value, is_scalar_integerish),
+    set_performance_threshold = function(value) {
+      print(class(value))
+      private$setter('performance_threshold', value, is_scalar_integerish)
+    },
 
     #' @description Set years to exclude.
     #' @param value Numeric vector.

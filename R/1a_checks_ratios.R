@@ -220,18 +220,27 @@ calculate_district_ratios_summary <- function(.data,
 #' }
 #'
 #' @noRd
-calculate_ratios_and_adequacy <- function(.data,
-                                          ratio_pairs = list(
-                                            "ratioAP" = c("anc1", "penta1"),
-                                            "ratioPP" = c("penta1", "penta3")
-                                          ),
+ calculate_ratios_and_adequacy <- function(.data,
+                                          ratio_pairs = NULL,
                                           adequate_range = c(1, 1.5),
                                           region = NULL) {
-  district <- year <- NULL
+  district = year = NULL
 
   check_cd_data(.data)
-  check_ratio_pairs(ratio_pairs)
   check_required(adequate_range)
+
+  if (is.null(ratio_pairs)) {
+    ratio_pairs = list(
+      "ratioAP" = c("anc1", "penta1"),
+      "ratioPP" = c("penta1", "penta3")
+    )
+
+    if (get_selected_group() == 'vaccine') {
+      ratio_pairs$ratioOO <- c("opv1", "opv3")
+    }
+  } else {
+    check_ratio_pairs(ratio_pairs)
+  }
 
   # Check that adequate_range is a numeric vector of length 2
   if (!is.numeric(adequate_range) || length(adequate_range) != 2) {

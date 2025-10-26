@@ -356,3 +356,30 @@ get_named_indicators <- function() {
   names(out) <- rep(names(groups), lengths(groups))
   out
 }
+
+#' List All Vaccine and Related Coverage Indicators
+#'
+#' Returns a vector of standard vaccine and related indicators used in coverage
+#' and dropout analysis. This includes routine immunizations, tracer indicators,
+#' and derived dropout/coverage metrics commonly used in DHIS2-based health reporting.
+#'
+#' @return A character vector of vaccine indicator names
+#'
+#' @examples
+#' list_vaccine_indicators()
+#'
+#' @export
+list_vaccine_indicators <- function() {
+  get_indicator_groups()[['vacc']]
+}
+
+#' List Tracer Vaccines
+#'
+#' Returns a subset of vaccines used in tracer metrics
+#'
+#' @return A character vector of tracer vaccines
+#'
+#' @export
+list_tracer_vaccines  <- function() {
+  c('bcg', 'measles1', 'opv1', 'opv2', 'opv3', 'penta1', 'penta2', 'penta3')
+}
