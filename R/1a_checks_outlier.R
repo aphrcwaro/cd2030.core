@@ -47,7 +47,7 @@ calculate_outliers_summary <- function(.data, admin_level = c('national', 'admin
     summarise(across(any_of(outlier_cols), mean, na.rm = TRUE), .by =c(admin_level_cols, 'year')) %>%
     mutate(
       mean_out_all = rowMeans(pick(any_of(outlier_cols)), na.rm = TRUE),
-      mean_out_all = round((1 - mean_out_all) * 100, 0)
+      across(c(any_of(outlier_cols), starts_with('mean_out_')), ~ round((1 - .x) * 100, 0))
     )
 
   new_tibble(

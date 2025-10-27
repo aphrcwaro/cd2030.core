@@ -36,50 +36,6 @@ init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, indicat
   return(cache)
 }
 
-#' Print Notes for a Specific Page and Object
-#'
-#' This function retrieves notes from the cache for a given `page_id` and `object_id`,
-#' filters them for those marked as `include_in_report`, and prints them to the console.
-#' If no notes are found, it prompts the user to enter notes for the given `page_id` and
-#' `object_id`, optionally including additional parameters.
-#'
-#' @param cache An object (e.g., of class `CacheConnection`) that manages cached
-#'   data, including notes.
-#' @param page_id A character string specifying the page identifier for which to
-#'   retrieve notes.
-#' @param object_id An optional character string specifying the object identifier
-#'   within the page. Defaults to `NULL`.
-#' @param parameters An optional named list of additional parameters to filter or
-#'   describe the notes.
-#'
-#' @return None. The function is used for its side effects (printing notes or
-#'   prompting the user).
-#'
-#' @keywords internal
-print_notes <- function(cache, page_id, object_id = NULL, parameters = NULL) {
-  include_in_report <- note <- NULL
-
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>%
-    filter(include_in_report == TRUE, !is.null(note))
-
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>%
-      pull(note) %>%
-      walk(~ cat(paste0(.x, '\n\n')))
-  } else {
-    # Format the parameters for the message
-    parameters_str <- if (!is.null(parameters)) {
-      paste0(' (parameters: ', paste(names(parameters), parameters, sep = ' = ', collapse = ', '), ')')
-    } else {
-      ''
-    }
-
-    cat(paste0('**--- Enter notes related to ', page_id, ' ', object_id, parameters_str, '. ---**\n\n'))
-  }
-}
-
 #' CacheConnection Class
 #'
 #' @description
@@ -154,64 +110,12 @@ CacheConnection <- R6::R6Class(
       }
     },
 
-    #' @description Append a note to a page.
-    #' @param page_id Page ID.
-    #' @param object_id Object ID.
-    #' @param note Note text.
-    #' @param parameters Named list of parameters.
-    #' @param include_in_report Logical flag.
-    #' @param include_plot_table Logical flag.
-    #' @param single_entry Logical flag for uniqueness.
-    append_page_note = function(page_id, object_id, note, parameters = list(), include_in_report = FALSE, include_plot_table = FALSE, single_entry = FALSE) {
-      # Validate inputs
-      stopifnot(is.character(page_id), is.character(object_id), is.character(note))
-      stopifnot(is.list(parameters), is.logical(include_in_report))
-
-      # Create a new note
-      new_note <- tibble(
-        page_id = page_id,
-        object_id = object_id,
-        note = note,
-        parameters = list(parameters), # Wrap in list for storage
-        include_in_report = include_in_report, # Single logical value
-        include_plot_table = include_plot_table
-      )
-
-      if (single_entry) {
-        filtered_notes <- private$.in_memory_data$page_notes %>%
-          filter(!(page_id == !!page_id & object_id == !!object_id))
-      } else {
-        filtered_notes <- private$.in_memory_data$page_notes %>%
-          filter(
-            !(page_id == !!page_id & object_id == !!object_id &
-              map_lgl(parameters, ~ identical(.x, !!parameters)))
-          )
-      }
-
-      # Append the new note to the page_notes tibble
-      private$.in_memory_data$page_notes <- bind_rows(filtered_notes, new_note)
-
-      # Mark data as changed and save to disk
-      private$.has_changed <- TRUE
-      self$save_to_disk()
-    },
-
     #' @description Adjusts data.
     adjust_data = function() {
       self$set_adjusted_flag(FALSE)
       data <- self$data_with_excluded_years %>%
         adjust_service_data(adjustment = 'custom', k_factors = self$k_factors)
       self$set_adjusted_data(data)
-    },
-
-    #' @description Retrieve notes for a given page/object.
-    #' @param page_id Page ID.
-    #' @param object_id Object ID.
-    #' @param parameters Named list of parameters.
-    get_notes = function(page_id, object_id = NULL, parameters = NULL) {
-      private$.in_memory_data$page_notes %>%
-        filter(if (is.null(!!object_id)) TRUE else object_id == !!object_id) %>%
-        filter(if (is.null(!!parameters)) TRUE else map_lgl(parameters, ~ identical(.x, !!parameters)))
     },
 
     #' @description Run coverage calculation using stored model parameters.
@@ -898,6 +802,9 @@ CacheConnection <- R6::R6Class(
       rds_path = NULL,
       countdown_data = NULL,
       performance_threshold = 90,
+
+
+
       excluded_years = numeric(),
       k_factors = c(anc = 0, idelv = 0, vacc = 0, opd = 0, ipd = 0),
       adjusted_flag = FALSE,
@@ -928,15 +835,7 @@ CacheConnection <- R6::R6Class(
       sector_national_estimates = NULL,
       sector_area_estimates = NULL,
       csection_national_estimates = NULL,
-      csection_area_estimates = NULL,
-      page_notes = tibble::tibble(
-        page_id = character(),
-        object_id = character(),
-        note = character(),
-        parameters = list(),
-        include_in_report = logical(),
-        include_plot_table = logical()
-      )
+      csection_area_estimates = NULL
     ),
     .in_memory_data = NULL,
     .adjusted_data = NULL,
