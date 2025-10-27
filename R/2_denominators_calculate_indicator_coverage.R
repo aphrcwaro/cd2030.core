@@ -43,18 +43,26 @@
 #' @export
 calculate_indicator_coverage <- function(.data,
                                          admin_level = c("national", "adminlevel_1", "district"),
+                                         derivation_population = c('totbirths_dhis2', 'totlivebirths_dhis2', 'totunder1_dhis2', 'totpop_dhis2',
+                                                                   'un_population', 'un_births', 'un_under1'),
+
                                          un_estimates = NULL,
+
+                                         anc1survey = 0.98,
+                                         dpt1survey = 0.97,
+                                         survey_year = 2019,
+
+
                                          region = NULL,
                                          sbr = 0.02,
                                          nmr = 0.025,
                                          pnmr = 0.024,
-                                         anc1survey = 0.98,
-                                         dpt1survey = 0.97,
-                                         survey_year = 2019,
                                          twin = 0.015,
                                          preg_loss = 0.03) {
+
   check_cd_data(.data)
   check_scalar_integerish(survey_year)
+  derivation_population <- arg_match(derivation_population)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level, region)
   admin_level_cols <- c(admin_level_cols, 'year')
@@ -62,34 +70,15 @@ calculate_indicator_coverage <- function(.data,
 
   population <- calculate_populations(.data,
     admin_level = admin_level,
-    un_estimates = un_estimates,
-    region = region,
-    sbr = sbr, nmr = nmr, pnmr = pnmr,
+    derivation_population = derivation_population,
+    un_estimates = un_estimates, survey_year = survey_year,
     anc1survey = anc1survey, dpt1survey = dpt1survey,
+    region = region, sbr = sbr, nmr = nmr, pnmr = pnmr,
     twin = twin, preg_loss = preg_loss
-  ) # %>%
-  # select(any_of(c(admin_level_cols, 'year')), starts_with('cov_'))
-
-  derived_data <- get_indicator_without_opd_ipd() %>%
-    map(~ {
-      dt <- calculate_derived_coverage(population, .x, survey_year, region)
-
-      if (!is.null(dt)) {
-        dt %>%
-          select(any_of(admin_level_cols), ends_with("penta1derived"))
-      } else {
-        dt
-      }
-    }) %>%
-    compact() %>%
-    unique() %>%
-    reduce(coalesce_join, by = admin_level_cols)
-
-  output_data <- population %>%
-    left_join(derived_data, by = admin_level_cols)
+  )
 
   new_tibble(
-    output_data,
+    population,
     class = c("cd_indicator_coverage", "cd_population"),
     admin_level = admin_level,
     iso3 = country_iso,
@@ -476,6 +465,7 @@ calculate_populations <- function(.data,
 
   # Compute penta 1 derived values based on population growth
   survey_year <- survey_year - 1
+  survey_year <- robust_max(c(survey_year, min(output_data$year, na.rm = TRUE)), 2025)
   population_col <- sym(derivation_population)
   penta1_estimates <- c('totinftpenta_penta1', 'totinftmeasles_penta1', 'totmeasles2_penta1', 'totlbirths_penta1',
                         'totbirths_penta1', 'totdeliv_penta1', 'totpreg_penta1')

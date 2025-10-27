@@ -77,6 +77,10 @@ CacheConnection <- R6::R6Class(
       if (!is.null(rds_path)) {
         self$load_from_disk()
       }
+
+      if (private$.in_memory_data$adjusted_flag && is.null(private$.in_memory_data$adjusted_data)) {
+
+      }
     },
 
     #' Load data from disk.
@@ -133,6 +137,7 @@ CacheConnection <- R6::R6Class(
       calculate_indicator_coverage(
         .data = self$adjusted_data,
         admin_level = admin_level,
+        derivation_population = self$derivation_population,
         un_estimates = self$un_estimates,
         region = region,
         sbr = rates$sbr,
@@ -371,17 +376,14 @@ CacheConnection <- R6::R6Class(
     #' @description Set adjusted data.
     #' @param value A `cd_data` object.
     set_adjusted_data = function(value) {
-      check_cd_data(value)
-      private$.adjusted_data <<- value
+      private$setter('adjusted_data', value, check_cd_data)
       private$.has_changed <<- TRUE
       self$set_adjusted_flag(TRUE)
-      private$trigger('adjusted_data')
     },
 
     #' @description Set performance threshold.
     #' @param value A numeric scalar.
     set_performance_threshold = function(value) {
-      print(class(value))
       private$setter('performance_threshold', value, is_scalar_integerish)
     },
 
@@ -391,7 +393,6 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set K-factors.
     #' @param value Named numeric vector.
-
     set_k_factors = function(value) {
       vacc_factors <- c('anc', 'idelv', 'vacc')
       factors <- if (get_selected_group() == 'vaccine') {
@@ -409,17 +410,21 @@ CacheConnection <- R6::R6Class(
     #' @description Set survey estimates.
     #' @param value Named numeric vector.
     set_survey_estimates = function(value) {
-      vacc_factors <- c('anc1', 'penta1', 'penta3', 'measles1')
+      common_factors <- c('anc1', 'penta1', 'penta3', 'measles1')
       factors <- if (get_selected_group() == 'vaccine') {
-        vacc_factors
+        c(common_factors, 'opv1', 'opv3')
       } else {
-        c(vacc_factors, 'anc4', 'ideliv', 'lbw', 'csection')
+        c(common_factors, 'anc4', 'ideliv', 'lbw', 'csection')
       }
       if (!is.numeric(value) || !all(factors %in% names(value))) {
         cd_abort(c('x' = 'Survey must be a numeric vector containing {.val factors}'))
       }
       private$update_field('survey_estimates', value)
     },
+
+    #' @description Set national estimates.
+    #' @param value Named list.
+    set_derivation_population = function(value) private$setter('derivation_population', value, is_scalar_character),
 
     #' @description Set national estimates.
     #' @param value Named list.
@@ -578,16 +583,16 @@ CacheConnection <- R6::R6Class(
     adjusted_data = function(value) {
       if (missing(value)) {
         private$depend('adjusted_data')
-        if (self$adjusted_flag && !is.null(private$.adjusted_data)) {
-          return(private$.adjusted_data)
+        if (self$adjusted_flag && !is.null(private$.in_memory_data$adjusted_data)) {
+          return(private$.in_memory_data$adjusted_data)
+        } else if (self$adjusted_flag && is.null(private$.in_memory_data$adjusted_data)) {
+          self$adjust_data()
+          return(private$.in_memory_data$adjusted_data)
         }
         return(NULL)
       }
 
-      check_cd_data(value)
-      private$.has_changed <<- TRUE
-      private$trigger(field_name)
-      private$.adjusted_data <- value
+      cd_abort(c('x' = '{.field adjusted_data} is readonly.'))
     },
 
     #' @field data_with_excluded_years Get data with excluded years removed.
@@ -615,14 +620,45 @@ CacheConnection <- R6::R6Class(
     #' @field adjusted_flag Gets adjusted flag.
     adjusted_flag = function(value) private$getter('adjusted_flag', value),
 
+    #' @field derivation_population Gets adjusted flag.
+    derivation_population = function(value) private$getter('derivation_population', value),
+
+    #' @field indicator_coverage_national Gets adjusted data.
+    indicator_coverage_national = function(value) {
+      if (missing(value)) {
+        cov <- private$getter('indicator_coverage_national', value)
+        if (is.null(cov)) {
+          cov <- self$calculate_indicator_coverage('national')
+          private$update_field('indicator_coverage_national', cov)
+        }
+        return(cov)
+      }
+
+      cd_abort(c('x' = '{.field indicator_coverage_national} is readonly.'))
+    },
+
+    #' @field indicator_coverage_admin1 Gets adjusted data.
+    indicator_coverage_admin1 = function(value) {
+      if (missing(value)) {
+        cov <- private$getter('indicator_coverage_admin1', value)
+        if (is.null(cov)) {
+          cov <- self$calculate_indicator_coverage('adminlevel_1')
+          private$update_field('indicator_coverage_admin1', cov)
+        }
+        return(cov)
+      }
+
+      cd_abort(c('x' = '{.field indicator_coverage_admin1} is readonly.'))
+    },
+
     #' @field survey_estimates Gets survey estimates.
     survey_estimates = function(value) {
       estimates <- private$getter('survey_estimates', value)
       group <- get_selected_group()
       if (group == 'vaccine') {
-        estimates[c("anc1", "penta1", "penta3", "measles1", "bcg")]
+        estimates[c("anc1", "penta1", "penta3", "measles1", "bcg", 'opv1', 'opv3')]
       } else {
-        estimates
+        estimates[which(!estimates %in% c('opv1', 'opv3'))]
       }
     },
 
@@ -801,20 +837,27 @@ CacheConnection <- R6::R6Class(
       language = 'en',
       rds_path = NULL,
       countdown_data = NULL,
+
       performance_threshold = 90,
-
-
-
       excluded_years = numeric(),
       k_factors = c(anc = 0, idelv = 0, vacc = 0, opd = 0, ipd = 0),
-      adjusted_flag = FALSE,
-      survey_year = NULL,
-      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, measles1 = NA, bcg = NA, anc4 = NA, ideliv = NA, lbw = NA, csection = NA),
-      national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
-      start_survey_year = NULL,
-      survey_source = NA,
+
       denominator = 'penta1',
       maternal_denominator = 'anc1',
+      derivation_population = 'totlivebirths_dhis2',
+
+      adjusted_flag = FALSE,
+      adjusted_data = NULL,
+
+      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, opv1 = NA, opv3 = NA, measles1 = NA, bcg = NA, anc4 = NA, ideliv = NA, lbw = NA, csection = NA),
+      national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
+      survey_year = NULL,
+      indicator_coverage_national = NULL,
+      indicator_coverage_admin1 = NULL,
+
+      start_survey_year = NULL,
+      survey_source = NA,
+
       selected_admin_level_1 = NULL,
       selected_district = NULL,
       selected_mortality_mapping_years = NULL,
@@ -838,7 +881,6 @@ CacheConnection <- R6::R6Class(
       csection_area_estimates = NULL
     ),
     .in_memory_data = NULL,
-    .adjusted_data = NULL,
     .has_changed = FALSE,
     .reactiveDep = NULL,
     #' Update a field (with change tracking)
@@ -847,6 +889,7 @@ CacheConnection <- R6::R6Class(
         private$.in_memory_data[[field_name]] <<- value
         private$.has_changed <<- TRUE
         private$trigger(field_name)
+        self$save_to_disk()
       }
     },
     getter = function(field_name, value) {
@@ -882,7 +925,6 @@ CacheConnection <- R6::R6Class(
         cd_abort(c('x' = 'Invalid value for field {.field {field_name}}.'))
       }
       private$update_field(field_name, value)
-      self$save_to_disk()
     },
     depend = function(field_name) {
       if (!is.null(private$.reactiveDep[[field_name]])) {

@@ -187,6 +187,20 @@ check_scalar_integerish <- function(vec, arg = caller_arg(vec), call = caller_en
   }
 }
 
+check_scalar_character <- function(vec, arg = caller_arg(vec), call = caller_env()) {
+  check_required(vec, arg = arg, call = call)
+
+  if (!is_scalar_character(vec)) {
+    cd_abort(
+      message = c(
+        "x" = "{.arg {arg}} is not a scalar string",
+        "!" = "Provide a scalar string value"
+      ),
+      call = call
+    )
+  }
+}
+
 cd_plot_theme <- function() {
   theme(
     panel.background = element_blank(),

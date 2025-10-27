@@ -76,7 +76,7 @@ adjust_service_data <- function(.data,
 
   k_defaults <- c(anc = 0.25, idelv = 0.25, pnc = 0.25, vacc = 0.25, opd = 0.25, ipd = 0.25)
 
-  if (adjustment == "none" || (adjustment == 'custom' && all(k_factors == 0))) {
+  if (adjustment == "none") {
     cd_info(c("i" = "No adjustment applied. Data returned as-is."))
     return(new_countdown(.data, "cd_adjusted_data"))
   }

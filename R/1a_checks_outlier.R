@@ -107,8 +107,6 @@ calculate_district_outlier_summary <- function(.data, region = NULL) {
     vaccine_only <- list_vaccine_indicators()
     tracers <- list_tracer_vaccines ()
 
-    print(glimpse(data))
-
     data <- data %>%
       mutate(
         mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
