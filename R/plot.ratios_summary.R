@@ -28,6 +28,8 @@
 plot.cd_ratios_summary <- function(x, ...) {
   year <- name <- value <- NULL
 
+  print(x)
+
   plot_data <- x %>%
     select(year, starts_with("Ratio ")) %>%
     pivot_longer(cols = -year) %>%

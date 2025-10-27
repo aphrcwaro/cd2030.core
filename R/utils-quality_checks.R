@@ -234,3 +234,15 @@ robust_max <- function(x, fallback = NA) {
     max(finite_values)
   }
 }
+
+default_ratio_pair <- function() {
+  ratio_pairs = list(
+    "ratioAP" = c("anc1", "penta1"),
+    "ratioPP" = c("penta1", "penta3")
+  )
+
+  if (get_selected_group() == 'vaccine') {
+    ratio_pairs$ratioOO <- c("opv1", "opv3")
+  }
+  ratio_pairs
+}

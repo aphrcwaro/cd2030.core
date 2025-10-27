@@ -58,13 +58,16 @@
 calculate_ratios_summary <- function(.data,
                                      survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 = 0.78, pcv1 = 0.97, rota1 = 0.96),
                                      anc1_penta1_mortality = 1.07,
-                                     ratio_pairs = list(
-                                       "ratioAP" = c("anc1", "penta1"),
-                                       "ratioPP" = c("penta1", "penta3")
-                                     ),
+                                     ratio_pairs = NULL,
                                      adequate_range = c(1, 1.5),
                                      region = NULL) {
-  year <- NULL
+  year = NULL
+
+  if (is.null(ratio_pairs)) {
+    ratio_pairs <- default_ratio_pair()
+  } else {
+    check_ratio_pairs(ratio_pairs)
+  }
 
   diff <- setdiff(unique(list_c(ratio_pairs)), names(survey_coverage))
   if (length(diff) > 0) {
@@ -230,14 +233,7 @@ calculate_district_ratios_summary <- function(.data,
   check_required(adequate_range)
 
   if (is.null(ratio_pairs)) {
-    ratio_pairs = list(
-      "ratioAP" = c("anc1", "penta1"),
-      "ratioPP" = c("penta1", "penta3")
-    )
-
-    if (get_selected_group() == 'vaccine') {
-      ratio_pairs$ratioOO <- c("opv1", "opv3")
-    }
+    ratio_pairs <- default_ratio_pair()
   } else {
     check_ratio_pairs(ratio_pairs)
   }
