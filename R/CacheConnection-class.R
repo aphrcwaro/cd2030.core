@@ -416,8 +416,12 @@ CacheConnection <- R6::R6Class(
       } else {
         c(common_factors, 'anc4', 'ideliv', 'lbw', 'csection')
       }
-      if (!is.numeric(value) || !all(factors %in% names(value))) {
-        cd_abort(c('x' = 'Survey must be a numeric vector containing {.val factors}'))
+      if (!is.numeric(value)) {
+        cd_abort(c('x' = 'Survey must be a numeric vector.'))
+      }
+      if (!all(factors %in% names(value))) {
+        missing <- setdiff(factor, names(value))
+        cd_warn(c('!' = 'Survey values are missing the following {.val {missing}}'))
       }
       private$update_field('survey_estimates', value)
     },
@@ -460,15 +464,15 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set mapping years.
     #' @param value Integer vector.
-    set_mapping_years = function(value) private$setter('selected_mapping_years', value, is_integerish),
+    set_mapping_years = function(value) private$setter('selected_mapping_years', value, is_numeric),
 
     #' @description Set mapping years.
     #' @param value Integer vector.
-    set_mortality_mapping_years = function(value) private$setter('selected_mortality_mapping_years', value, is_integerish),
+    set_mortality_mapping_years = function(value) private$setter('selected_mortality_mapping_years', value, is.numeric),
 
     #' @description Set mapping years.
     #' @param value Integer vector.
-    set_utilization_mapping_years = function(value) private$setter('selected_utilization_mapping_years', value, is_integerish),
+    set_utilization_mapping_years = function(value) private$setter('selected_utilization_mapping_years', value, is_numeric),
 
     #' @description Set FPET data.
     #' @param value Data frame.
