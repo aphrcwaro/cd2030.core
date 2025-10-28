@@ -316,8 +316,6 @@ detect_indicator_group <- function(indicators) {
 resolve_indicator_group <- function(indicators, group = c('auto', 'rmncah', 'vaccine', 'custom'), profile = NULL) {
   group <- arg_match(group)
 
-  print(group)
-
   if (group == 'custom' && is.null(profile)) {
     cd_abort(c('x' = '{.arg profile} must be provided in custom group.'))
   }

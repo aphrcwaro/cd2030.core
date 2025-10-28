@@ -159,5 +159,5 @@ adjust_service_data <- function(.data,
     ) %>%
     select(-any_of(paste0(all_indicators, "_rr")))
 
-  new_countdown(merged_data, "cd_adjusted_data")
+  new_countdown(merged_data, "cd_adjusted_data", indicator_group = get_selected_group())
 }
