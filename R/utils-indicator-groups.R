@@ -282,7 +282,7 @@ detect_indicator_group <- function(indicators) {
   # Stable final tie-break
   if (length(best) > 1L) {
     cd_info(c('i' = paste0("Auto-detect tie resolved alphabetically among: ", paste(best, collapse = ", "))))
-    best <- sort(best)[1]
+    best <- get_selected_group()
   }
 
   # Log final decision and candidate sizes
