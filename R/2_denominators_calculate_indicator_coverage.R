@@ -164,11 +164,15 @@ calculate_populations <- function(.data,
                                   twin = 0.015,
                                   preg_loss = 0.03) {
 
+  check_cd_data(.data)
+
   admin_level <- arg_match(admin_level)
   derivation_population <- arg_match(derivation_population)
   if (admin_level == 'national' && !is_integerish(survey_year)) {
     cd_abort("x" = "{.arg survey_year} should be an integer")
   }
+
+  iso3 <- attr_or_abort(.data, 'iso3')
 
   national_population <- prepare_population_metrics(.data, admin_level = admin_level, un_estimates = un_estimates, region = region)
   indicator_numerator <- compute_indicator_numerator(.data, admin_level = admin_level, region = region)
@@ -557,11 +561,12 @@ calculate_populations <- function(.data,
 
   new_tibble(
     output_data,
-    class = c("cd_population"),
+    class = "cd_population",
     admin_level = admin_level,
     population = derivation_population,
     survey_year = survey_year,
-    region = region
+    region = region,
+    iso3 = iso3
   )
 }
 

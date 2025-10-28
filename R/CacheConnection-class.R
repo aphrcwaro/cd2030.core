@@ -218,22 +218,10 @@ CacheConnection <- R6::R6Class(
         cd_abort(c('x' = 'One or more parameters is missing for {.fun calculate_inequality}'))
       }
 
-      rates <- self$national_estimates
-
-      get_mapping_data(
-        .data = self$adjusted_data,
-        admin_level = admin_level,
-        un_estimates = self$un_estimates,
-        sbr = rates$sbr,
-        nmr = rates$nmr,
-        pnmr = rates$pnmr,
-        twin = rates$twin_rate,
-        preg_loss = rates$preg_loss,
-        anc1survey = rates$anc1,
-        dpt1survey = rates$penta1,
-        survey_year = self$survey_year,
-        subnational_map = self$map_mapping
-      )
+      self$indicator_coverage_admin1 %>%
+        get_mapping_data(
+          subnational_map = self$map_mapping
+        )
     },
 
     #' @description Run coverage calculation using stored model parameters.
