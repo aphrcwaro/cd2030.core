@@ -272,6 +272,7 @@ plot.cd_indicator_coverage_filtered <- function(x, ...) {
   title_text <- str_glue("{indicator_name} Coverage, DHIS2-based with different denominators, and survey coverage for {year}")
 
   max_y <- robust_max(c(x$value, coverage))
+  max_y <- max(100, max_y)
   limits <- c(0, max_y)
   breaks <- scales::pretty_breaks(n = 11)(limits)
 

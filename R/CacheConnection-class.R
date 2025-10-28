@@ -110,7 +110,7 @@ CacheConnection <- R6::R6Class(
       if (private$.has_changed && !is.null(private$.in_memory_data$rds_path)) { # Key change here
         private$.in_memory_data$survey_source <- NA
         saveRDS(private$.in_memory_data, private$.in_memory_data$rds_path)
-        private$.has_changed <- FALSE
+        private$.has_changed <<- FALSE
       }
     },
 
@@ -279,7 +279,7 @@ CacheConnection <- R6::R6Class(
     #' @description generates the mean institutional livebirths
     lbr_mean = function() {
       indicator <- paste0('cov_instlivebirths_', self$maternal_denominator)
-      self$calculate_indicator_coverage('national') %>%
+      self$indicator_coverage_national %>%
         select(year, all_of(indicator)) %>%
         summarise(lbr_mean = mean(!!sym(indicator))) %>%
         pull(lbr_mean)
@@ -379,6 +379,7 @@ CacheConnection <- R6::R6Class(
       private$setter('adjusted_data', value, check_cd_data)
       private$.has_changed <<- TRUE
       self$set_adjusted_flag(TRUE)
+      private$.invalidate_coverage <<- TRUE
     },
 
     #' @description Set performance threshold.
@@ -428,11 +429,17 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set national estimates.
     #' @param value Named list.
-    set_derivation_population = function(value) private$setter('derivation_population', value, is_scalar_character),
+    set_derivation_population = function(value) {
+      private$setter('derivation_population', value, is_scalar_character)
+      private$.invalidate_coverage <<- TRUE
+    },
 
     #' @description Set national estimates.
     #' @param value Named list.
-    set_national_estimates = function(value) private$setter('national_estimates', value, is.list),
+    set_national_estimates = function(value) {
+      private$setter('national_estimates', value, is.list)
+      private$.invalidate_coverage <<- TRUE
+    },
 
     #' @description Set year of survey estimates.
     #' @param value Character scalar.
@@ -480,7 +487,10 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set UN estimates.
     #' @param value Data frame.
-    set_un_estimates = function(value) private$setter('un_estimates', value, check_un_estimates_data),
+    set_un_estimates = function(value) {
+      private$setter('un_estimates', value, check_un_estimates_data)
+      private$.invalidate_coverage <<- TRUE
+    },
 
     #' @description Set UN mortality estimates
     #' @param value Data frame.
@@ -661,10 +671,15 @@ CacheConnection <- R6::R6Class(
     #' @field indicator_coverage_national Gets adjusted data.
     indicator_coverage_national = function(value) {
       if (missing(value)) {
+        private$depend('derivation_population')
+        private$depend('adjusted_data')
+        private$depend('national_estimates')
+        private$depend('un_estimates')
         cov <- private$getter('indicator_coverage_national', value)
-        if (is.null(cov)) {
+        if (is.null(cov) || private$.invalidate_coverage) {
           cov <- self$calculate_indicator_coverage('national')
           private$update_field('indicator_coverage_national', cov)
+          private$.invalidate_coverage <- FALSE
         }
         return(cov)
       }
@@ -675,10 +690,14 @@ CacheConnection <- R6::R6Class(
     #' @field indicator_coverage_admin1 Gets adjusted data.
     indicator_coverage_admin1 = function(value) {
       if (missing(value)) {
+        private$depend('derivation_population')
+        private$depend('adjusted_data')
+        private$depend('national_estimates')
         cov <- private$getter('indicator_coverage_admin1', value)
-        if (is.null(cov)) {
+        if (is.null(cov) || private$.invalidate_coverage) {
           cov <- self$calculate_indicator_coverage('adminlevel_1')
           private$update_field('indicator_coverage_admin1', cov)
+          private$.invalidate_coverage <- FALSE
         }
         return(cov)
       }
@@ -918,6 +937,7 @@ CacheConnection <- R6::R6Class(
       csection_area_estimates = NULL
     ),
     .in_memory_data = NULL,
+    .invalidate_coverage = FALSE,
     .has_changed = FALSE,
     .reactiveDep = NULL,
     #' Update a field (with change tracking)

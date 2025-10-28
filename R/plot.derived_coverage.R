@@ -74,12 +74,12 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
     )
 
   present_labels <- unique(cols$series_label)
-  print(sort(unique(cols$value)))
 
   # Determine upper y-axis limit using rounded max
   max_val <- robust_max(cols$value, fallback = 100)
   print(max_val)
   y_max <- ceiling(max_val / 10) * 10
+  y_max <- max(100, y_max)   # ensure at least 100
   base_pal <- c("#009E73","#E69F00","#0072B2","#8A2BE2","#D55E00","#CC79A7","#F0E442","#000000")
   pal <- setNames(base_pal[seq_along(present_labels)], present_labels)
 
