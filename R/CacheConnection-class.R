@@ -544,6 +544,30 @@ CacheConnection <- R6::R6Class(
     #' @field countdown_data Get countdown data.
     countdown_data = function(value) private$getter('countdown_data', value),
 
+    #' @field data_years Get countdown data.
+    data_years = function(value) {
+      years <- private$getter('data_years', value)
+      if (is.null(years)) {
+        years <- self$countdown_data %>%
+          distinct(year) %>%
+          arrange(year) %>%
+          pull(year)
+        private$update_field('data_years', years)
+      }
+      return(years)
+    },
+    #' @field data_years Get countdown data.
+    subnational_regions = function(value) {
+      regions <- private$getter('subnational_regions', value)
+      if (is.null(regions)) {
+        regions <- self$countdown_data %>%
+          distinct(adminlevel_1, district) %>%
+          arrange(adminlevel_1, district)
+        private$update_field('adminlevel_1, district', regions)
+      }
+      return(regions)
+    },
+
     #' @field country Get country name.
     country = function(value) {
       if (missing(value)) {
@@ -625,7 +649,14 @@ CacheConnection <- R6::R6Class(
     adjusted_flag = function(value) private$getter('adjusted_flag', value),
 
     #' @field derivation_population Gets adjusted flag.
-    derivation_population = function(value) private$getter('derivation_population', value),
+    derivation_population = function(value) {
+      pop <- private$getter('derivation_population', value)
+      if (is.null(pop)) {
+        pop <- 'totlivebirths_dhis2'
+        set_derivation_population('derivation_population', pop)
+      }
+      return(pop)
+    },
 
     #' @field indicator_coverage_national Gets adjusted data.
     indicator_coverage_national = function(value) {
@@ -841,6 +872,8 @@ CacheConnection <- R6::R6Class(
       language = 'en',
       rds_path = NULL,
       countdown_data = NULL,
+      data_years = NULL,
+      subnational_regions = NULL,
 
       performance_threshold = 90,
       excluded_years = numeric(),
