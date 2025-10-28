@@ -653,7 +653,7 @@ CacheConnection <- R6::R6Class(
       pop <- private$getter('derivation_population', value)
       if (is.null(pop)) {
         pop <- 'totlivebirths_dhis2'
-        self$set_derivation_population('derivation_population', pop)
+        self$set_derivation_population(pop)
       }
       return(pop)
     },
