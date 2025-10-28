@@ -32,7 +32,7 @@
 #'
 #' @export
 calculate_outliers_summary <- function(.data, admin_level = c('national', 'adminlevel_1', 'district'), region = NULL) {
-  year <- . <- NULL
+  year = . = NULL
 
   check_cd_data(.data)
   admin_level <- arg_match(admin_level)
@@ -40,16 +40,13 @@ calculate_outliers_summary <- function(.data, admin_level = c('national', 'admin
 
   all_indicators <- get_all_indicators()
   ipd <- get_indicator_groups()[['ipd']]
-  four_indicators <- paste0(setdiff(all_indicators, ipd), '_outlier5std')
-
-  outlier_cols <- paste0(all_indicators, '_outlier5std')
+  outlier_cols <- paste0(setdiff(all_indicators, ipd), '_outlier5std')
 
   data <- .data %>%
     calculate_outlier_core(indicators = all_indicators, admin_level = admin_level, region = region) %>%
     summarise(across(any_of(outlier_cols), mean, na.rm = TRUE), .by =c(admin_level_cols, 'year')) %>%
     mutate(
       mean_out_all = rowMeans(pick(any_of(outlier_cols)), na.rm = TRUE),
-      mean_out_four = rowMeans(pick(any_of(four_indicators)), na.rm = TRUE),
       across(c(any_of(outlier_cols), starts_with('mean_out_')), ~ round((1 - .x) * 100, 0))
     )
 
@@ -88,15 +85,13 @@ calculate_outliers_summary <- function(.data, admin_level = c('national', 'admin
 #'
 #' @export
 calculate_district_outlier_summary <- function(.data, region = NULL) {
-  district <- year <- . <- NULL
+  district = year = . = NULL
 
   check_cd_data(.data)
 
   all_indicators <- get_all_indicators()
   ipd <- get_indicator_groups()[['ipd']]
-  four_indicators <- paste0(setdiff(all_indicators, ipd), '_outlier5std')
-
-  outlier_cols <- paste0(all_indicators, '_outlier5std')
+  outlier_cols <- paste0(setdiff(all_indicators, ipd), '_outlier5std')
 
   data <- .data %>%
     calculate_outlier_core(indicators = all_indicators, admin_level = 'district') %>%
@@ -104,10 +99,20 @@ calculate_district_outlier_summary <- function(.data, region = NULL) {
     summarise(across(all_of(outlier_cols), robust_max), .by = c(district, year)) %>%
     summarise(across(all_of(outlier_cols), mean, na.rm = TRUE), .by = year) %>%
     mutate(
-      mean_out_all = rowMeans(pick(all_of(outlier_cols)), na.rm = TRUE),
-      mean_out_four = rowMeans(pick(all_of(four_indicators)), na.rm = TRUE),
-      across(c(all_of(outlier_cols), starts_with("mean_out_")), ~ round((1 - .x) * 100, 2))
+      mean_out_all = rowMeans(select(., outlier_cols), na.rm = TRUE),
+      across(all_of(c(outlier_cols, 'mean_out_all')), ~ round((1 - .x) * 100, 2))
     )
+
+  if (get_selected_group() == 'vaccine') {
+    vaccine_only <- list_vaccine_indicators()
+    tracers <- list_tracer_vaccines ()
+
+    data <- data %>%
+      mutate(
+        mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
+        mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, '_outlier5std')), na.rm = TRUE)
+      )
+  }
 
   new_tibble(
     data,

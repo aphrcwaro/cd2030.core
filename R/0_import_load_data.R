@@ -125,22 +125,25 @@ load_cache_data <- function(path,
                             indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
                             profile = NULL,
                             on_conflict = c('replace', 'merge', 'error'),
+                            create_cache = FALSE,
                             start_year = NULL,
                             admin_sheet_name = NULL,
                             population_sheet_name = NULL,
                             reporting_sheet_name = NULL,
                             service_sheet_names = NULL) {
   check_file_path(path)
+  indicator_group <- arg_match(indicator_group)
 
   # Determine file extension and load accordingly
   ext <- str_to_lower(tools::file_ext(path))
   final_data <- if (ext %in% c('xlsx', 'xls', 'dta')) {
-    indicator_group <- arg_match0(indicator_group, names(.cd2030_indicator_groups))
     on_conflict <- arg_match(on_conflict)
     data <- load_data(path, indicator_group, profile, on_conflict, start_year,
                       admin_sheet_name, population_sheet_name,service_sheet_names,
                       service_sheet_names)
-    return(init_CacheConnection(countdown_data = data))
+    data_path <- if (create_cache) dirname(path) else NULL
+    indicator_group <- get_selected_group()
+    return(init_CacheConnection(countdown_data = data, data_path = data_path))
   } else if (ext == 'rds') {
     return(init_CacheConnection(rds_path = path, indicator_group = indicator_group))
   } else {
@@ -284,7 +287,6 @@ new_countdown <- function(
     profile_name = NULL,
     profile = NULL
 ) {
-
   check_required(.data)
 
   column_names <- colnames(.data)
@@ -305,7 +307,7 @@ new_countdown <- function(
     .data,
     country = country$alternate,
     iso3 = as.character(country$iso3),
-    indicator_group = indicator_group,
+    indicator_group = resolved_group,
     profile = profile,
     class = c(class, "cd_data")
   )

@@ -36,7 +36,7 @@
 #' }
 #'
 #' @export
-plot.cd_population_metrics <- function(x, metric = c("population", "births"), ...) {
+plot.cd_population_metrics <- function(x, metric = c("population", "births", 'under1'), ...) {
   year <- un_population <- totpop_dhis2 <- un_births <- totlivebirths_dhis2 <- NULL
 
   # Match argument to enforce valid choices
@@ -62,9 +62,18 @@ plot.cd_population_metrics <- function(x, metric = c("population", "births"), ..
     plot_line_graph(
       .data = x,
       x = "year",
-      y_vars = c("un_births", "totlivebirths_dhis2"),
-      y_labels = c("UN Live Births (in 1000)", "DHIS-2 Live Births Projection (in 1000)"),
+      y_vars = c("un_births", "totlivebirths_dhis2", 'totbirths_dhis2'),
+      y_labels = c("UN Live Births (in 1000)", "DHIS-2 Live Births Projection (in 1000)", 'DHIS-2 Total Births Projection (in 1000)'),
       title = "Total Live Births (in thousands), DHIS2 and UN projections",
+      y_axis_title = "Population"
+    )
+  } else if (metric == 'under1') {
+    plot_line_graph(
+      .data = x,
+      x = "year",
+      y_vars = c("un_under1", "totunder1_dhis2"),
+      y_labels = c("UN Under 1 (in 1000)", "DHIS-2 Under 1 Projection (in 1000)"),
+      title = "Under 1 (in thousands), DHIS2 and UN projections",
       y_axis_title = "Population"
     )
   }

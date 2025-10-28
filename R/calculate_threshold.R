@@ -33,7 +33,7 @@
 #' @export
 calculate_threshold <- function(.data,
                                 denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
-                                indicator = c('anc4', 'instdeliveries', 'vaccine')) {
+                                indicator = c('anc4', 'instdeliveries', 'vaccine', 'dropout')) {
   check_cd_indicator_coverage(.data)
   indicator <- arg_match(indicator)
   denominator <- arg_match(denominator)
@@ -45,7 +45,8 @@ calculate_threshold <- function(.data,
 
   indicators <- switch(
     indicator,
-    vaccine = 'penta3|measles1|bcg',
+    vaccine = 'bcg|penta3|measles1',
+    dropout = 'dropout_penta13|dropout_penta3mcv1',
     indicator
   )
 
@@ -53,13 +54,21 @@ calculate_threshold <- function(.data,
     indicator,
     vaccine = 90,
     anc4 = 70,
-    instdeliveries = 80
+    instdeliveries = 80,
+    dropout = 10
   )
 
   threshold <- .data %>%
     select(year, any_of(admin_level_cols), matches(paste0('cov_(', indicators, ')_', denominator, '$'))) %>%
     summarise(
-      across(starts_with('cov_'), ~ mean(.x >= coverage, na.rm = TRUE) * 100),
+      across(starts_with('cov_'), ~ {
+        threshold_func <- if (grepl('dropout', cur_column())) {
+          function(x) x < 10
+        } else {
+          function(x) x >= 90
+        }
+        mean(threshold_func(.x)) * 100
+      }),
       .by = year
     )
 
@@ -102,7 +111,7 @@ filter_high_performers <- function(.data,
                                    denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                                    threshold = 90) {
   check_cd_indicator_coverage(.data)
-  indicator <- arg_match(indicator, get_indicator_without_opd_ipd())
+  indicator <- arg_match(indicator, get_analysis_indicators())
   denominator <- arg_match(denominator)
 
   column <- paste0('cov_', indicator, '_', denominator)

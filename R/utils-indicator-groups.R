@@ -141,7 +141,7 @@ register_indicator_group <- function(name, value, on_conflict = c('replace', 'me
 
   exists_now <- name %in% names(.get_all_groups())
   if (exists_now && identical(on_conflict, 'error')) {
-    cd_abort(c('x' = str_glue('Indicator group {.arg name} already exists')))
+    cd_abort(c('x' = 'Indicator group {.arg name} already exists'))
   }
 
   if (identical(on_conflict, 'replace') || !exists_now) {
@@ -282,7 +282,7 @@ detect_indicator_group <- function(indicators) {
   # Stable final tie-break
   if (length(best) > 1L) {
     cd_info(c('i' = paste0("Auto-detect tie resolved alphabetically among: ", paste(best, collapse = ", "))))
-    best <- sort(best)[1]
+    best <- get_selected_group()
   }
 
   # Log final decision and candidate sizes
@@ -340,10 +340,17 @@ get_all_indicators <- function() sort(list_c(get_indicator_groups()))
 #' @description Flatten all indicators from all groups
 #' @return Character vector of all indicators
 #' @export
-get_indicator_without_opd_ipd <- function()  {
+get_analysis_indicators <- function()  {
   groups <- get_indicator_groups()
   indicators <- sort(list_c(groups[!names(groups) %in% c("ipd", "opd")]))
-  indicators[!indicators %in% c('sba', "total_stillbirth", "stillbirth_f", "stillbirth_m", "maternal_deaths", "neonatal_deaths", 'under5_deaths', 'total_deaths')]
+
+  if (get_selected_group() == 'vaccine') {
+    indicators <- c(indicators,'dropout_penta13','dropout_penta3mcv1','dropout_penta1mcv1', 'dropout_measles12', 'undervax','zerodose')
+  } else if (get_selected_group() == 'rmncah') {
+    indicators <- indicators[!indicators %in% c('sba', "total_stillbirth", "stillbirth_f", "stillbirth_m", "maternal_deaths", "neonatal_deaths", 'under5_deaths', 'total_deaths')]
+  }
+
+  indicators
 }
 
 #' @title Get Named Indicator Vector
@@ -355,4 +362,31 @@ get_named_indicators <- function() {
   out <- list_c(groups)
   names(out) <- rep(names(groups), lengths(groups))
   out
+}
+
+#' List All Vaccine and Related Coverage Indicators
+#'
+#' Returns a vector of standard vaccine and related indicators used in coverage
+#' and dropout analysis. This includes routine immunizations, tracer indicators,
+#' and derived dropout/coverage metrics commonly used in DHIS2-based health reporting.
+#'
+#' @return A character vector of vaccine indicator names
+#'
+#' @examples
+#' list_vaccine_indicators()
+#'
+#' @export
+list_vaccine_indicators <- function() {
+  get_indicator_groups()[['vacc']]
+}
+
+#' List Tracer Vaccines
+#'
+#' Returns a subset of vaccines used in tracer metrics
+#'
+#' @return A character vector of tracer vaccines
+#'
+#' @export
+list_tracer_vaccines  <- function() {
+  c('bcg', 'measles1', 'opv1', 'opv2', 'opv3', 'penta1', 'penta2', 'penta3')
 }

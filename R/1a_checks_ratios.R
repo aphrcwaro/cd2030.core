@@ -58,13 +58,16 @@
 calculate_ratios_summary <- function(.data,
                                      survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 = 0.78, pcv1 = 0.97, rota1 = 0.96),
                                      anc1_penta1_mortality = 1.07,
-                                     ratio_pairs = list(
-                                       "ratioAP" = c("anc1", "penta1"),
-                                       "ratioPP" = c("penta1", "penta3")
-                                     ),
+                                     ratio_pairs = NULL,
                                      adequate_range = c(1, 1.5),
                                      region = NULL) {
-  year <- NULL
+  year = NULL
+
+  if (is.null(ratio_pairs)) {
+    ratio_pairs <- default_ratio_pair()
+  } else {
+    check_ratio_pairs(ratio_pairs)
+  }
 
   diff <- setdiff(unique(list_c(ratio_pairs)), names(survey_coverage))
   if (length(diff) > 0) {
@@ -220,18 +223,20 @@ calculate_district_ratios_summary <- function(.data,
 #' }
 #'
 #' @noRd
-calculate_ratios_and_adequacy <- function(.data,
-                                          ratio_pairs = list(
-                                            "ratioAP" = c("anc1", "penta1"),
-                                            "ratioPP" = c("penta1", "penta3")
-                                          ),
+ calculate_ratios_and_adequacy <- function(.data,
+                                          ratio_pairs = NULL,
                                           adequate_range = c(1, 1.5),
                                           region = NULL) {
-  district <- year <- NULL
+  district = year = NULL
 
   check_cd_data(.data)
-  check_ratio_pairs(ratio_pairs)
   check_required(adequate_range)
+
+  if (is.null(ratio_pairs)) {
+    ratio_pairs <- default_ratio_pair()
+  } else {
+    check_ratio_pairs(ratio_pairs)
+  }
 
   # Check that adequate_range is a numeric vector of length 2
   if (!is.numeric(adequate_range) || length(adequate_range) != 2) {

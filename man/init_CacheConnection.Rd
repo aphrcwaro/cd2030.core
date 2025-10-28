@@ -7,6 +7,7 @@
 init_CacheConnection(
   rds_path = NULL,
   countdown_data = NULL,
+  data_path = NULL,
   indicator_group = c("auto", "rmncah", "vaccine", "custom")
 )
 }
@@ -14,6 +15,8 @@ init_CacheConnection(
 \item{rds_path}{Optional character. Path to an RDS file to load the cache from.}
 
 \item{countdown_data}{Optional \code{cd_data} object to initialize in-memory cache.}
+
+\item{data_path}{Optional. Used with the countdown to support in creating the cache file.}
 }
 \value{
 An instance of the \code{CacheConnection} class.

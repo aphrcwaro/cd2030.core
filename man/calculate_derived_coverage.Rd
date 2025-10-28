@@ -4,14 +4,14 @@
 \alias{calculate_derived_coverage}
 \title{Generate Coverage Data with Derived Denominators}
 \usage{
-calculate_derived_coverage(.data, indicator, base_year, region = NULL)
+calculate_derived_coverage(.data, indicator)
 }
 \arguments{
 \item{.data}{A \code{cd_population_metrics} object containing indicator values and DHIS2 population.}
 
 \item{indicator}{A character string specifying the indicator to calculate coverage for.}
 
-\item{base_year}{Integer. The year from which denominator proportions are derived.}
+\item{survey_year}{Integer. The year from which denominator proportions are derived.}
 }
 \value{
 A \code{cd_derived_coverage} tibble with columns for old and new coverage estimates.

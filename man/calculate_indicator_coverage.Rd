@@ -7,14 +7,16 @@
 calculate_indicator_coverage(
   .data,
   admin_level = c("national", "adminlevel_1", "district"),
+  derivation_population = c("totbirths_dhis2", "totlivebirths_dhis2", "totunder1_dhis2",
+    "totpop_dhis2", "un_population", "un_births", "un_under1"),
   un_estimates = NULL,
+  anc1survey = 0.98,
+  dpt1survey = 0.97,
+  survey_year = 2019,
   region = NULL,
   sbr = 0.02,
   nmr = 0.025,
   pnmr = 0.024,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  survey_year = 2019,
   twin = 0.015,
   preg_loss = 0.03
 )
@@ -29,17 +31,17 @@ Options include:\verb{"national", "adminlevel_1"}, and \code{"district"}.}
 \item{un_estimates}{Optional. A tibble containing UN population estimates. Required
 for national-level calculations.}
 
-\item{sbr}{Numeric. The stillbirth rate. Default is \code{0.02}.}
-
-\item{nmr}{Numeric. Neonatal mortality rate. Default is \code{0.025}.}
-
-\item{pnmr}{Numeric. Post-neonatal mortality rate. Default is \code{0.024}.}
-
 \item{anc1survey}{Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is \code{0.98}.}
 
 \item{dpt1survey}{Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is \code{0.97}.}
 
 \item{survey_year}{Interger. The year of Penta-1 survey provided}
+
+\item{sbr}{Numeric. The stillbirth rate. Default is \code{0.02}.}
+
+\item{nmr}{Numeric. Neonatal mortality rate. Default is \code{0.025}.}
+
+\item{pnmr}{Numeric. Post-neonatal mortality rate. Default is \code{0.024}.}
 
 \item{twin}{Numeric. Twin birth rate. Default is \code{0.015}.}
 

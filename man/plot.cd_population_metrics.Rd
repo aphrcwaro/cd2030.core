@@ -4,7 +4,7 @@
 \alias{plot.cd_population_metrics}
 \title{Plot National Population or Births Metrics}
 \usage{
-\method{plot}{cd_population_metrics}(x, metric = c("population", "births"), ...)
+\method{plot}{cd_population_metrics}(x, metric = c("population", "births", "under1"), ...)
 }
 \arguments{
 \item{x}{A \code{cd_population_metrics} object containing national-level demographic

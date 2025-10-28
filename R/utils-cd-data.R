@@ -20,7 +20,7 @@
 attr_or_abort <- function(.data, attr_name) {
   value <- attr(.data, attr_name)
   if (is.null(value)) {
-    cd_abort(c("x" = str_glue("Missing attribute: {attr_name}")))
+    cd_abort(c("x" = "Missing attribute: {attr_name}"))
   }
   value
 }
@@ -95,7 +95,7 @@ is_maternal_indicator <- function(indicator) {
 #'
 #' @export
 get_population_column <- function(indicator, denominator) {
-  indicator <- arg_match(indicator, get_all_indicators())
+  indicator <- arg_match(indicator, get_analysis_indicators())
   denominator <- arg_match(denominator, c("dhis2", "anc1", "penta1", "penta1derived"))
   population <- case_match(
     indicator,

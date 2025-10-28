@@ -44,23 +44,16 @@
 #'
 #' @export
 get_mapping_data <- function(.data,
-                             admin_level = c("adminlevel_1", "district"),
-                             un_estimates = NULL,
-                             sbr = 0.02,
-                             nmr = 0.025,
-                             pnmr = 0.024,
-                             anc1survey = 0.98,
-                             dpt1survey = 0.97,
-                             survey_year = 2019,
-                             twin = 0.015,
-                             preg_loss = 0.03,
                              subnational_map = NULL) {
-  NAME_1 <- adminlevel_1 <- district <- NULL
+  NAME_1 = NULL
 
-  check_cd_data(.data)
-  check_un_estimates_data(un_estimates)
+  check_cd_population(.data)
 
   iso <- attr_or_abort(.data, "iso3")
+  admin_level <- attr_or_abort(.data, 'admin_level')
+  if (admin_level != 'adminlevel_1') {
+    cd_abort(c('x' = 'Only admin 1 data is supported currently.'))
+  }
 
   shapefile <- get_country_shapefile(iso, "admin_level_1")
 
@@ -74,10 +67,6 @@ get_mapping_data <- function(.data,
   }
 
   merged_data <- .data %>%
-    calculate_indicator_coverage(
-      admin_level, un_estimates, sbr = sbr, nmr = nmr, pnmr = pnmr, anc1survey = anc1survey,
-      dpt1survey = dpt1survey, survey_year = survey_year, twin = twin, preg_loss = preg_loss
-    ) %>%
     left_join(shapefile, by = join_by(adminlevel_1))
 
   new_tibble(
@@ -116,7 +105,7 @@ filter_mapping_data <- function(.data,
                                 plot_year = NULL) {
   check_cd_mapping(.data)
 
-  indicator <- arg_match(indicator, get_indicator_without_opd_ipd())
+  indicator <- arg_match(indicator, get_analysis_indicators())
   denominator <- arg_match(denominator)
   palette <- arg_match(palette)
 

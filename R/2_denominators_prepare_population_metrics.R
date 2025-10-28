@@ -43,9 +43,9 @@ prepare_population_metrics <- function(.data,
                                        admin_level = c("national", "adminlevel_1", "district"),
                                        un_estimates = NULL,
                                        region = NULL) {
-  totlivebirths_dhis2 <- total_pop <- under5_pop <- under1_pop <- live_births <-
-    total_births <- women15_49 <- pop_rate <- adminlevel_1 <- district <- year <-
-    pop_dhis2 <- livebirths_dhis2 <- totpop_dhis2 <- totlivebirths_dhis2 <- iso3 <- NULL
+  totlivebirths_dhis2 = total_pop = under5_pop = under1_pop = live_births =
+    total_births = women15_49 = pop_rate = adminlevel_1 = district = year =
+    pop_dhis2 = livebirths_dhis2 = totpop_dhis2 = totlivebirths_dhis2 = iso3 = NULL
 
   # Validate inputs
   check_cd_data(.data)
@@ -81,9 +81,9 @@ prepare_population_metrics <- function(.data,
     distinct(district, adminlevel_1, year, .keep_all = TRUE) %>%
     mutate(
       totpop_dhis2 = sum(pop_dhis2, na.rm = TRUE) / 1000,
-      totbirths_dhis2 = sum(allbirths_dhis2, na.rm = TRUE),
+      totbirths_dhis2 = sum(allbirths_dhis2, na.rm = TRUE) / 1000,
       totlivebirths_dhis2 = sum(livebirths_dhis2, na.rm = TRUE) / 1000,
-      totunder1_dhis2 = sum(under1_dhis2, na.rm = TRUE),
+      totunder1_dhis2 = sum(under1_dhis2, na.rm = TRUE) / 1000,
       .by = all_of(group_vars)
     ) %>%
     summarise(
@@ -97,7 +97,8 @@ prepare_population_metrics <- function(.data,
   # Integrate UN estimates for national-level calculations
   if (admin_level == "national" && !is.null(un_estimates)) {
     combined_data <- dhis_data %>%
-      left_join(un_estimates, by = "year")
+      left_join(un_estimates, by = "year") %>%
+      rename(un_under1 = un_under1y)
   } else {
     combined_data <- dhis_data
   }
@@ -105,7 +106,7 @@ prepare_population_metrics <- function(.data,
   # Define the desired order for final output
   desired_order <- c(
     "iso3", "adminlevel_1", "district", "year", "un_population",
-    "totpop_dhis2", "un_births", 'totbirths_dhis2', "totlivebirths_dhis2", "totunder1_dhis2", "un_popgrowth"
+    "totpop_dhis2", "un_births", 'totbirths_dhis2', "totlivebirths_dhis2", 'un_under1', "totunder1_dhis2", "un_popgrowth"
   )
 
   # Finalize the data structure

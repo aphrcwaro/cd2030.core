@@ -22,7 +22,7 @@ check_required_columns_exist <- function(.data, resolved_group, call = caller_en
   if (length(missing_cols) > 0) {
     cd_abort(
       c(
-        "x" = str_glue("Data does not contain all indicators for group '{resolved_group}'."),
+        "x" = "Data does not contain all indicators for group '{resolved_group}'.",
         "!" = '{.field {paste(missing_cols, collapse = ", ")}}'
       ),
       call = call
@@ -181,6 +181,20 @@ check_scalar_integerish <- function(vec, arg = caller_arg(vec), call = caller_en
       message = c(
         "x" = "{.arg {arg}} is not an integer",
         "!" = "Provide a scalar integer value"
+      ),
+      call = call
+    )
+  }
+}
+
+check_scalar_character <- function(vec, arg = caller_arg(vec), call = caller_env()) {
+  check_required(vec, arg = arg, call = call)
+
+  if (!is_scalar_character(vec)) {
+    cd_abort(
+      message = c(
+        "x" = "{.arg {arg}} is not a scalar string",
+        "!" = "Provide a scalar string value"
       ),
       call = call
     )

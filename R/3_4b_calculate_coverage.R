@@ -139,7 +139,7 @@ filter_coverage <- function(.data,
   admin_level <- attr_or_abort(.data, 'admin_level')
   region_from_calc <- attr_or_null(.data, 'region')
 
-  indicator <- arg_match(indicator, get_indicator_without_opd_ipd())
+  indicator <- arg_match(indicator, get_analysis_indicators())
   denominator <- arg_match(denominator)
 
   if ((admin_level == 'national' || (admin_level == 'adminlevel_1' && !is.null(region_from_calc))) && !is.null(region)) {

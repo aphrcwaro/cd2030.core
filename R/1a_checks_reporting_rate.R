@@ -21,7 +21,7 @@
 calculate_average_reporting_rate <- function(.data,
                                              admin_level = c("national", "adminlevel_1", "district"),
                                              region = NULL) {
-  . <- NULL
+  . = NULL
 
   check_cd_data(.data)
 
@@ -31,15 +31,14 @@ calculate_average_reporting_rate <- function(.data,
     cd_abort(c('x' = 'Region can only be specified for {.arg adminlevel_1}'))
   }
 
-  allindicators <- get_indicator_group_names()
-  indicators <- paste0(allindicators, "_rr")
-  four_indicators <- paste0(allindicators[which(allindicators != 'ipd')], "_rr")
+  group_name <- get_indicator_group_names()
+  # indicators <- paste0(group_name, "_rr")
+  indicators <- paste0(group_name[which(group_name != 'ipd')], "_rr")
 
   reporting_rate <- .data %>%
     filter(if (!is.null(region)) adminlevel_1 == region else TRUE) %>%
     summarise(across(all_of(indicators), mean, na.rm = TRUE), .by = c(admin_level_cols, "year")) %>%
     mutate(
-      mean_four_rr = rowMeans(select(., four_indicators), na.rm = TRUE),
       mean_rr = rowMeans(select(., indicators), na.rm = TRUE)
     ) %>%
     mutate(across(ends_with("_rr"), round, 0))
@@ -77,17 +76,16 @@ calculate_district_reporting_rate <- function(.data, threshold = 90, region = NU
 
   check_cd_data(.data)
 
-  allindicators <- get_indicator_group_names()
-  indicators <- paste0(allindicators, "_rr")
-  four_indicators <- paste0('low_', allindicators[which(allindicators != 'ipd')], "_rr")
+  group_name <- get_indicator_group_names()
+  # indicators <- paste0(group_name, "_rr")
+  indicators <- paste0(group_name[which(group_name != 'ipd')], '_rr')
 
   reporting_rate <- .data %>%
     filter(if(is.null(region)) TRUE else adminlevel_1 == region) %>%
     summarise(across(all_of(indicators), mean, na.rm = TRUE), .by = c(district, year)) %>%
     summarise(across(all_of(indicators), ~ mean(.x >= threshold, na.rm = TRUE) * 100, .names = "low_{.col}"), .by = year) %>%
     mutate(
-      low_mean_rr = rowMeans(select(., starts_with("low_")), na.rm = TRUE),
-      low_mean_four_rr = rowMeans(select(., any_of(four_indicators)), na.rm = TRUE)
+      low_mean_rr = rowMeans(select(., starts_with("low_")), na.rm = TRUE)
     ) %>%
     mutate(across(starts_with("low_"), round, 0))
 

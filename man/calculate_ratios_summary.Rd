@@ -9,7 +9,7 @@ calculate_ratios_summary(
   survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 =
     0.78, pcv1 = 0.97, rota1 = 0.96),
   anc1_penta1_mortality = 1.07,
-  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3")),
+  ratio_pairs = NULL,
   adequate_range = c(1, 1.5),
   region = NULL
 )

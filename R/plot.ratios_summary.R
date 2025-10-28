@@ -26,7 +26,7 @@
 #'
 #' @export
 plot.cd_ratios_summary <- function(x, ...) {
-  year <- name <- value <- NULL
+  year = name = value = NULL
 
   plot_data <- x %>%
     select(year, starts_with("Ratio ")) %>%

@@ -5,6 +5,7 @@ plot.cd_threshold <- function(x, ...) {
   indicators <- switch (
     indicators,
     vaccine = 'Vaccines',
+    dropout = 'Dropout',
     anc4 = 'ANC 4',
     instdeliveries = 'Institutional Delivery'
   )
@@ -17,11 +18,15 @@ plot.cd_threshold <- function(x, ...) {
     district = "Districts"
   )
 
+  rate <- if(indicators == 'Dropout') 'rate' else 'Coverage'
+  sign <- if(indicators == 'Dropout') '<' else '≥'
+
   title <- if (is.null(region)) {
-    str_glue('Pecentage of {admin_level} with {indicators} Coverage > {coverage}%')
+    str_glue('Pecentage of {admin_level} with {indicators} {rate} {sign} {coverage}%')
   } else {
-    str_glue('Pecentage of {admin_level} in {region} with {indicators} Coverage > {coverage}%')
+    str_glue('Pecentage of {admin_level} in {region} with {indicators} {rate} {sign} {coverage}%')
   }
+
 
   x %>%
     pivot_longer(

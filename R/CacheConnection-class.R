@@ -5,15 +5,17 @@
 #'
 #' @param rds_path Optional character. Path to an RDS file to load the cache from.
 #' @param countdown_data Optional `cd_data` object to initialize in-memory cache.
+#' @param data_path Optional. Used with the countdown to support in creating the cache file.
 #'
 #' @return An instance of the `CacheConnection` class.
 #'
 #' @export
-init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, indicator_group = c('auto', 'rmncah', 'vaccine', 'custom')) {
+init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_path = NULL, indicator_group = c('auto', 'rmncah', 'vaccine', 'custom')) {
   indicator_group <- arg_match(indicator_group)
   cache <- CacheConnection$new(
     rds_path = rds_path,
-    countdown_data = countdown_data
+    countdown_data = countdown_data,
+    data_path = data_path
   )
 
   profile <- attr_or_null(cache$countdown_data, 'profile')
@@ -27,57 +29,13 @@ init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, indicat
   resolved_group <- attr_or_null(cache$countdown_data, 'indicator_group')
   if (is.null(resolved_group)) {
     cols <- colnames(cache$countdown_data)
-    resolved_group <- resolve_indicator_group(cols, indicator_group)
+    resolved_group <- resolve_indicator_group(cols, indicator_group, profile)
   }
 
   check_required_columns_exist(cache$countdown_data, resolved_group)
   set_selected_group(resolved_group)
 
   return(cache)
-}
-
-#' Print Notes for a Specific Page and Object
-#'
-#' This function retrieves notes from the cache for a given `page_id` and `object_id`,
-#' filters them for those marked as `include_in_report`, and prints them to the console.
-#' If no notes are found, it prompts the user to enter notes for the given `page_id` and
-#' `object_id`, optionally including additional parameters.
-#'
-#' @param cache An object (e.g., of class `CacheConnection`) that manages cached
-#'   data, including notes.
-#' @param page_id A character string specifying the page identifier for which to
-#'   retrieve notes.
-#' @param object_id An optional character string specifying the object identifier
-#'   within the page. Defaults to `NULL`.
-#' @param parameters An optional named list of additional parameters to filter or
-#'   describe the notes.
-#'
-#' @return None. The function is used for its side effects (printing notes or
-#'   prompting the user).
-#'
-#' @keywords internal
-print_notes <- function(cache, page_id, object_id = NULL, parameters = NULL) {
-  include_in_report <- note <- NULL
-
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>%
-    filter(include_in_report == TRUE, !is.null(note))
-
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>%
-      pull(note) %>%
-      walk(~ cat(paste0(.x, '\n\n')))
-  } else {
-    # Format the parameters for the message
-    parameters_str <- if (!is.null(parameters)) {
-      paste0(' (parameters: ', paste(names(parameters), parameters, sep = ' = ', collapse = ', '), ')')
-    } else {
-      ''
-    }
-
-    cat(paste0('**--- Enter notes related to ', page_id, ' ', object_id, parameters_str, '. ---**\n\n'))
-  }
 }
 
 #' CacheConnection Class
@@ -99,7 +57,8 @@ CacheConnection <- R6::R6Class(
     #' @description Initialize a CacheConnection instance.
     #' @param rds_path Path to the RDS file (can be NULL).
     #' @param countdown_data Countdown data of class `cd_data`.
-    initialize = function(rds_path = NULL, countdown_data = NULL) {
+    #' @param data_path Directory to store the cache
+    initialize = function(rds_path = NULL, countdown_data = NULL, data_path = NULL) {
       if (is.null(rds_path) && is.null(countdown_data)) {
         cd_abort(c('x' = 'Both {.arg rds_path} and {.arg countdown_data} cannot be null.'))
       }
@@ -120,6 +79,16 @@ CacheConnection <- R6::R6Class(
 
       if (!is.null(rds_path)) {
         self$load_from_disk()
+      }
+
+      if (!is.null(countdown_data) && !is.null(data_path)) {
+        tryCatch({
+          self$set_cache_path(file.path(data_path, paste0(self$country, '_', format(Sys.time(), '%Y%m%d%H%M'), '.rds')))
+        },
+        error = function(e) {
+          error_message <- clean_error_message(e)
+          cd_warn(c('!' = error_message))
+        })
       }
     },
 
@@ -150,50 +119,8 @@ CacheConnection <- R6::R6Class(
       if (private$.has_changed && !is.null(private$.in_memory_data$rds_path)) { # Key change here
         private$.in_memory_data$survey_source <- NA
         saveRDS(private$.in_memory_data, private$.in_memory_data$rds_path)
-        private$.has_changed <- FALSE
+        private$.has_changed <<- FALSE
       }
-    },
-
-    #' @description Append a note to a page.
-    #' @param page_id Page ID.
-    #' @param object_id Object ID.
-    #' @param note Note text.
-    #' @param parameters Named list of parameters.
-    #' @param include_in_report Logical flag.
-    #' @param include_plot_table Logical flag.
-    #' @param single_entry Logical flag for uniqueness.
-    append_page_note = function(page_id, object_id, note, parameters = list(), include_in_report = FALSE, include_plot_table = FALSE, single_entry = FALSE) {
-      # Validate inputs
-      stopifnot(is.character(page_id), is.character(object_id), is.character(note))
-      stopifnot(is.list(parameters), is.logical(include_in_report))
-
-      # Create a new note
-      new_note <- tibble(
-        page_id = page_id,
-        object_id = object_id,
-        note = note,
-        parameters = list(parameters), # Wrap in list for storage
-        include_in_report = include_in_report, # Single logical value
-        include_plot_table = include_plot_table
-      )
-
-      if (single_entry) {
-        filtered_notes <- private$.in_memory_data$page_notes %>%
-          filter(!(page_id == !!page_id & object_id == !!object_id))
-      } else {
-        filtered_notes <- private$.in_memory_data$page_notes %>%
-          filter(
-            !(page_id == !!page_id & object_id == !!object_id &
-              map_lgl(parameters, ~ identical(.x, !!parameters)))
-          )
-      }
-
-      # Append the new note to the page_notes tibble
-      private$.in_memory_data$page_notes <- bind_rows(filtered_notes, new_note)
-
-      # Mark data as changed and save to disk
-      private$.has_changed <- TRUE
-      self$save_to_disk()
     },
 
     #' @description Adjusts data.
@@ -202,16 +129,6 @@ CacheConnection <- R6::R6Class(
       data <- self$data_with_excluded_years %>%
         adjust_service_data(adjustment = 'custom', k_factors = self$k_factors)
       self$set_adjusted_data(data)
-    },
-
-    #' @description Retrieve notes for a given page/object.
-    #' @param page_id Page ID.
-    #' @param object_id Object ID.
-    #' @param parameters Named list of parameters.
-    get_notes = function(page_id, object_id = NULL, parameters = NULL) {
-      private$.in_memory_data$page_notes %>%
-        filter(if (is.null(!!object_id)) TRUE else object_id == !!object_id) %>%
-        filter(if (is.null(!!parameters)) TRUE else map_lgl(parameters, ~ identical(.x, !!parameters)))
     },
 
     #' @description Run coverage calculation using stored model parameters.
@@ -229,6 +146,7 @@ CacheConnection <- R6::R6Class(
       calculate_indicator_coverage(
         .data = self$adjusted_data,
         admin_level = admin_level,
+        derivation_population = self$derivation_population,
         un_estimates = self$un_estimates,
         region = region,
         sbr = rates$sbr,
@@ -309,22 +227,10 @@ CacheConnection <- R6::R6Class(
         cd_abort(c('x' = 'One or more parameters is missing for {.fun calculate_inequality}'))
       }
 
-      rates <- self$national_estimates
-
-      get_mapping_data(
-        .data = self$adjusted_data,
-        admin_level = admin_level,
-        un_estimates = self$un_estimates,
-        sbr = rates$sbr,
-        nmr = rates$nmr,
-        pnmr = rates$pnmr,
-        twin = rates$twin_rate,
-        preg_loss = rates$preg_loss,
-        anc1survey = rates$anc1,
-        dpt1survey = rates$penta1,
-        survey_year = self$survey_year,
-        subnational_map = self$map_mapping
-      )
+      self$indicator_coverage_admin1 %>%
+        get_mapping_data(
+          subnational_map = self$map_mapping
+        )
     },
 
     #' @description Run coverage calculation using stored model parameters.
@@ -370,7 +276,7 @@ CacheConnection <- R6::R6Class(
     #' @description generates the mean institutional livebirths
     lbr_mean = function() {
       indicator <- paste0('cov_instlivebirths_', self$maternal_denominator)
-      self$calculate_indicator_coverage('national') %>%
+      self$indicator_coverage_national %>%
         select(year, all_of(indicator)) %>%
         summarise(lbr_mean = mean(!!sym(indicator))) %>%
         pull(lbr_mean)
@@ -457,6 +363,7 @@ CacheConnection <- R6::R6Class(
       if (path_set) {
         private$.has_changed <- TRUE
         self$save_to_disk()
+        cd_info(c('i' = str_glue('Successfully saved to {.val value}.')))
       }
     },
 
@@ -467,16 +374,17 @@ CacheConnection <- R6::R6Class(
     #' @description Set adjusted data.
     #' @param value A `cd_data` object.
     set_adjusted_data = function(value) {
-      check_cd_data(value)
-      private$.adjusted_data <<- value
+      private$setter('adjusted_data', value, check_cd_data)
       private$.has_changed <<- TRUE
       self$set_adjusted_flag(TRUE)
-      private$trigger('adjusted_data')
+      private$.invalidate_coverage <<- TRUE
     },
 
     #' @description Set performance threshold.
     #' @param value A numeric scalar.
-    set_performance_threshold = function(value) private$setter('performance_threshold', value, is_scalar_integerish),
+    set_performance_threshold = function(value) {
+      private$setter('performance_threshold', value, is_scalar_integerish)
+    },
 
     #' @description Set years to exclude.
     #' @param value Numeric vector.
@@ -484,7 +392,6 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set K-factors.
     #' @param value Named numeric vector.
-
     set_k_factors = function(value) {
       vacc_factors <- c('anc', 'idelv', 'vacc')
       factors <- if (get_selected_group() == 'vaccine') {
@@ -502,21 +409,35 @@ CacheConnection <- R6::R6Class(
     #' @description Set survey estimates.
     #' @param value Named numeric vector.
     set_survey_estimates = function(value) {
-      vacc_factors <- c('anc1', 'penta1', 'penta3', 'measles1')
+      common_factors <- c('anc1', 'penta1', 'penta3', 'measles1')
       factors <- if (get_selected_group() == 'vaccine') {
-        vacc_factors
+        c(common_factors, 'opv1', 'opv3')
       } else {
-        c(vacc_factors, 'anc4', 'ideliv', 'lbw', 'csection')
+        c(common_factors, 'anc4', 'ideliv', 'lbw', 'csection')
       }
-      if (!is.numeric(value) || !all(factors %in% names(value))) {
-        cd_abort(c('x' = 'Survey must be a numeric vector containing {.val factors}'))
+      if (!is.numeric(value)) {
+        cd_abort(c('x' = 'Survey must be a numeric vector.'))
+      }
+      if (!all(factors %in% names(value))) {
+        missing <- setdiff(factor, names(value))
+        cd_warn(c('!' = 'Survey values are missing the following {.val {missing}}'))
       }
       private$update_field('survey_estimates', value)
     },
 
     #' @description Set national estimates.
     #' @param value Named list.
-    set_national_estimates = function(value) private$setter('national_estimates', value, is.list),
+    set_derivation_population = function(value) {
+      private$setter('derivation_population', value, is_scalar_character)
+      private$.invalidate_coverage <<- TRUE
+    },
+
+    #' @description Set national estimates.
+    #' @param value Named list.
+    set_national_estimates = function(value) {
+      private$setter('national_estimates', value, is.list)
+      private$.invalidate_coverage <<- TRUE
+    },
 
     #' @description Set year of survey estimates.
     #' @param value Character scalar.
@@ -548,15 +469,15 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set mapping years.
     #' @param value Integer vector.
-    set_mapping_years = function(value) private$setter('selected_mapping_years', value, is_integerish),
+    set_mapping_years = function(value) private$setter('selected_mapping_years', value, is.numeric),
 
     #' @description Set mapping years.
     #' @param value Integer vector.
-    set_mortality_mapping_years = function(value) private$setter('selected_mortality_mapping_years', value, is_integerish),
+    set_mortality_mapping_years = function(value) private$setter('selected_mortality_mapping_years', value, is.numeric),
 
     #' @description Set mapping years.
     #' @param value Integer vector.
-    set_utilization_mapping_years = function(value) private$setter('selected_utilization_mapping_years', value, is_integerish),
+    set_utilization_mapping_years = function(value) private$setter('selected_utilization_mapping_years', value, is.numeric),
 
     #' @description Set FPET data.
     #' @param value Data frame.
@@ -564,7 +485,10 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set UN estimates.
     #' @param value Data frame.
-    set_un_estimates = function(value) private$setter('un_estimates', value, check_un_estimates_data),
+    set_un_estimates = function(value) {
+      private$setter('un_estimates', value, check_un_estimates_data)
+      private$.invalidate_coverage <<- TRUE
+    },
 
     #' @description Set UN mortality estimates
     #' @param value Data frame.
@@ -628,6 +552,30 @@ CacheConnection <- R6::R6Class(
     #' @field countdown_data Get countdown data.
     countdown_data = function(value) private$getter('countdown_data', value),
 
+    #' @field data_years Get countdown data.
+    data_years = function(value) {
+      years <- private$getter('data_years', value)
+      if (is.null(years)) {
+        years <- self$countdown_data %>%
+          distinct(year) %>%
+          arrange(year) %>%
+          pull(year)
+        private$update_field('data_years', years)
+      }
+      return(years)
+    },
+    #' @field subnational_regions Get countdown data.
+    subnational_regions = function(value) {
+      regions <- private$getter('subnational_regions', value)
+      if (is.null(regions)) {
+        regions <- self$countdown_data %>%
+          distinct(adminlevel_1, district) %>%
+          arrange(adminlevel_1, district)
+        private$update_field('adminlevel_1, district', regions)
+      }
+      return(regions)
+    },
+
     #' @field country Get country name.
     country = function(value) {
       if (missing(value)) {
@@ -671,16 +619,16 @@ CacheConnection <- R6::R6Class(
     adjusted_data = function(value) {
       if (missing(value)) {
         private$depend('adjusted_data')
-        if (self$adjusted_flag && !is.null(private$.adjusted_data)) {
-          return(private$.adjusted_data)
+        if (self$adjusted_flag && !is.null(private$.in_memory_data$adjusted_data)) {
+          return(private$.in_memory_data$adjusted_data)
+        } else if (self$adjusted_flag && is.null(private$.in_memory_data$adjusted_data)) {
+          self$adjust_data()
+          return(private$.in_memory_data$adjusted_data)
         }
         return(NULL)
       }
 
-      check_cd_data(value)
-      private$.has_changed <<- TRUE
-      private$trigger(field_name)
-      private$.adjusted_data <- value
+      cd_abort(c('x' = '{.field adjusted_data} is readonly.'))
     },
 
     #' @field data_with_excluded_years Get data with excluded years removed.
@@ -708,14 +656,61 @@ CacheConnection <- R6::R6Class(
     #' @field adjusted_flag Gets adjusted flag.
     adjusted_flag = function(value) private$getter('adjusted_flag', value),
 
+    #' @field derivation_population Gets adjusted flag.
+    derivation_population = function(value) {
+      pop <- private$getter('derivation_population', value)
+      if (is.null(pop)) {
+        pop <- 'totlivebirths_dhis2'
+        self$set_derivation_population(pop)
+      }
+      return(pop)
+    },
+
+    #' @field indicator_coverage_national Gets adjusted data.
+    indicator_coverage_national = function(value) {
+      if (missing(value)) {
+        private$depend('derivation_population')
+        private$depend('adjusted_data')
+        private$depend('national_estimates')
+        private$depend('un_estimates')
+        cov <- private$getter('indicator_coverage_national', value)
+        if (is.null(cov) || private$.invalidate_coverage) {
+          cov <- self$calculate_indicator_coverage('national')
+          private$update_field('indicator_coverage_national', cov)
+          private$.invalidate_coverage <- FALSE
+        }
+        return(cov)
+      }
+
+      cd_abort(c('x' = '{.field indicator_coverage_national} is readonly.'))
+    },
+
+    #' @field indicator_coverage_admin1 Gets adjusted data.
+    indicator_coverage_admin1 = function(value) {
+      if (missing(value)) {
+        private$depend('derivation_population')
+        private$depend('adjusted_data')
+        private$depend('national_estimates')
+        cov <- private$getter('indicator_coverage_admin1', value)
+        if (is.null(cov) || private$.invalidate_coverage) {
+          cov <- self$calculate_indicator_coverage('adminlevel_1')
+          private$update_field('indicator_coverage_admin1', cov)
+          private$.invalidate_coverage <- FALSE
+        }
+        return(cov)
+      }
+
+      cd_abort(c('x' = '{.field indicator_coverage_admin1} is readonly.'))
+    },
+
     #' @field survey_estimates Gets survey estimates.
     survey_estimates = function(value) {
       estimates <- private$getter('survey_estimates', value)
       group <- get_selected_group()
       if (group == 'vaccine') {
-        estimates[c("anc1", "penta1", "penta3", "measles1", "bcg")]
+        estimates[c("anc1", "penta1", "penta3", "measles1", "bcg", 'opv1', 'opv3')]
       } else {
-        estimates
+        estimates[which(!estimates %in% c('opv1', 'opv3'))]
       }
     },
 
@@ -894,17 +889,29 @@ CacheConnection <- R6::R6Class(
       language = 'en',
       rds_path = NULL,
       countdown_data = NULL,
+      data_years = NULL,
+      subnational_regions = NULL,
+
       performance_threshold = 90,
       excluded_years = numeric(),
       k_factors = c(anc = 0, idelv = 0, vacc = 0, opd = 0, ipd = 0),
-      adjusted_flag = FALSE,
-      survey_year = NULL,
-      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, measles1 = NA, bcg = NA, anc4 = NA, ideliv = NA, lbw = NA, csection = NA),
-      national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
-      start_survey_year = NULL,
-      survey_source = NA,
+
       denominator = 'penta1',
       maternal_denominator = 'anc1',
+      derivation_population = 'totlivebirths_dhis2',
+
+      adjusted_flag = FALSE,
+      adjusted_data = NULL,
+
+      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, opv1 = NA, opv3 = NA, measles1 = NA, bcg = NA, anc4 = NA, ideliv = NA, lbw = NA, csection = NA),
+      national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
+      survey_year = NULL,
+      indicator_coverage_national = NULL,
+      indicator_coverage_admin1 = NULL,
+
+      start_survey_year = NULL,
+      survey_source = NA,
+
       selected_admin_level_1 = NULL,
       selected_district = NULL,
       selected_mortality_mapping_years = NULL,
@@ -925,18 +932,10 @@ CacheConnection <- R6::R6Class(
       sector_national_estimates = NULL,
       sector_area_estimates = NULL,
       csection_national_estimates = NULL,
-      csection_area_estimates = NULL,
-      page_notes = tibble::tibble(
-        page_id = character(),
-        object_id = character(),
-        note = character(),
-        parameters = list(),
-        include_in_report = logical(),
-        include_plot_table = logical()
-      )
+      csection_area_estimates = NULL
     ),
     .in_memory_data = NULL,
-    .adjusted_data = NULL,
+    .invalidate_coverage = FALSE,
     .has_changed = FALSE,
     .reactiveDep = NULL,
     #' Update a field (with change tracking)
@@ -945,6 +944,7 @@ CacheConnection <- R6::R6Class(
         private$.in_memory_data[[field_name]] <<- value
         private$.has_changed <<- TRUE
         private$trigger(field_name)
+        self$save_to_disk()
       }
     },
     getter = function(field_name, value) {
@@ -980,7 +980,6 @@ CacheConnection <- R6::R6Class(
         cd_abort(c('x' = 'Invalid value for field {.field {field_name}}.'))
       }
       private$update_field(field_name, value)
-      self$save_to_disk()
     },
     depend = function(field_name) {
       if (!is.null(private$.reactiveDep[[field_name]])) {

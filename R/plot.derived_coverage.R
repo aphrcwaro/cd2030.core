@@ -47,39 +47,56 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
 
   # Dynamic title based on admin level
   title_text <- if (admin_level == "national") {
-    str_glue("National {indicator_label} Coverage Over Time")
+    str_glue("National Coverage Over Time by Denominator")
   } else {
-    str_glue("{indicator_label} Coverage Over Time for {region}")
+    str_glue("{region} Coverage Over Time for  by Denominator")
   }
 
-  coverage_old <- paste0("cov_", indicator, "_penta1")
-  coverage_new <- paste0(coverage_old, "derived")
-
-  # Determine upper y-axis limit using rounded max
-  max_val <- robust_max(c(data[[coverage_new]], data[[coverage_old]]), fallback = 100)
-  y_max <- ceiling(max_val / 10) * 10
-
-  # Define custom legend labels
-  legend_labels <- setNames(
-    c("blue", "red"),
-    c(paste0(indicator_label, " New"), paste0(indicator_label, " Old"))
+  # suffix -> pretty name map (your list)
+  suffix_map <- c(
+    "penta1derived" = "Penta1-derived",
+    "penta1"        = "Penta1",
+    "anc1"          = "ANC1",
+    "dhis2"         = "DHIS2",
+    "un"            = "UN"
   )
 
-  ggplot(data, aes(x = year)) +
-    geom_line(aes(y = !!sym(coverage_new), color = paste0(indicator_label, " New")), size = 1) +
-    geom_line(aes(y = !!sym(coverage_old), color = paste0(indicator_label, " Old")), size = 1) +
-    geom_hline(yintercept = 100, linetype = "dashed", color = "gray") +
+  # coverage_old <- paste0("cov_", indicator, "_penta1")
+  # coverage_new <- paste0(coverage_old, "derived")
+  cov_indicator <- paste0('cov_', indicator)
+
+  cols <- x %>%
+    select(year, starts_with(cov_indicator)) %>%
+    pivot_longer(cols = -year, names_to = "series", values_to = "value") %>%
+    mutate(
+      suffix = gsub(paste0("^", cov_indicator, "_?"), "", series),
+      series_label = factor(suffix_map[suffix], levels = suffix_map)
+    )
+
+  present_labels <- unique(cols$series_label)
+
+  # Determine upper y-axis limit using rounded max
+  max_val <- robust_max(cols$value, fallback = 100)
+  y_max <- ceiling(max_val / 10) * 10
+  y_max <- max(100, y_max)   # ensure at least 100
+  base_pal <- c("#009E73","#E69F00","#0072B2","#8A2BE2","#D55E00","#CC79A7","#F0E442","#000000")
+  pal <- setNames(base_pal[seq_along(present_labels)], present_labels)
+
+  ggplot(cols, aes(x = year, y = value, colour = series_label, group = series_label)) +
+    geom_line(linewidth = 1) +
+    geom_point(size = 2) +
+    geom_hline(yintercept = 100, linetype = "dashed", colour = "gray70") +
     scale_y_continuous(
       breaks = scales::pretty_breaks(n = 13),
       expand = expansion(mult = c(0, 0.05)),
-      limits = c(0, y_max)
+      limits = c(0, y_max),
+      labels = scales::label_number(accuracy = 1)
     ) +
-    scale_color_manual(values = legend_labels) +
+    scale_color_manual(values = pal, name = NULL) +
     labs(
       title = title_text,
       y = str_glue("{indicator_label} Coverage (%)"),
-      x = "Year",
-      color = NULL
+      x = "Year"
     ) +
     cd_plot_theme()
 }

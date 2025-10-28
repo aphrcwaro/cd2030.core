@@ -76,7 +76,7 @@ adjust_service_data <- function(.data,
 
   k_defaults <- c(anc = 0.25, idelv = 0.25, pnc = 0.25, vacc = 0.25, opd = 0.25, ipd = 0.25)
 
-  if (adjustment == "none" || (adjustment == 'custom' && all(k_factors == 0))) {
+  if (adjustment == "none") {
     cd_info(c("i" = "No adjustment applied. Data returned as-is."))
     return(new_countdown(.data, "cd_adjusted_data"))
   }
@@ -91,7 +91,7 @@ adjust_service_data <- function(.data,
   }
 
   indicator_groups <- get_indicator_groups()
-  all_indicators <- get_indicator_without_opd_ipd()
+  all_indicators <- get_all_indicators()
   last_year <- robust_max(.data$year)
 
   merged_data <- .data %>%
@@ -159,5 +159,5 @@ adjust_service_data <- function(.data,
     ) %>%
     select(-any_of(paste0(all_indicators, "_rr")))
 
-  new_countdown(merged_data, "cd_adjusted_data")
+  new_countdown(merged_data, "cd_adjusted_data", indicator_group = get_selected_group())
 }

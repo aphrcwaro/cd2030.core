@@ -4,12 +4,7 @@
 \alias{calculate_overall_score}
 \title{Calculate Overall Quality Score for Data Quality Metrics}
 \usage{
-calculate_overall_score(
-  .data,
-  threshold,
-  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3")),
-  region = NULL
-)
+calculate_overall_score(.data, threshold, ratio_pairs = NULL, region = NULL)
 }
 \arguments{
 \item{.data}{A data frame of type \code{cd_data} containing facility data
