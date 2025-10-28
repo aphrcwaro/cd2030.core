@@ -50,6 +50,7 @@ or directly from a <code>cd_data</code> object. Only one of the arguments should
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">init_CacheConnection</span><span class="op">(</span></span>
 <span>  rds_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  countdown_data <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  data_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  indicator_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"rmncah"</span>, <span class="st">"vaccine"</span>, <span class="st">"custom"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -64,6 +65,10 @@ or directly from a <code>cd_data</code> object. Only one of the arguments should
 
 <dt id="arg-countdown-data">countdown_data<a class="anchor" aria-label="anchor" href="#arg-countdown-data"></a></dt>
 <dd><p>Optional <code>cd_data</code> object to initialize in-memory cache.</p></dd>
+
+
+<dt id="arg-data-path">data_path<a class="anchor" aria-label="anchor" href="#arg-data-path"></a></dt>
+<dd><p>Optional. Used with the countdown to support in creating the cache file.</p></dd>
 
 </dl></div>
     <div class="section level2">

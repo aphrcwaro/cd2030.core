@@ -55,6 +55,7 @@
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/generate_report.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_admin_columns.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_all_indicators.html</loc></url>
+<url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_analysis_indicators.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_country_iso3.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_country_name.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_country_shapefile.html</loc></url>
@@ -62,7 +63,6 @@
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_excel_version.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_indicator_group_names.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_indicator_groups.html</loc></url>
-<url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_indicator_without_opd_ipd.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_mapping_data.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_named_indicators.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/get_plot_admin_column.html</loc></url>
@@ -76,6 +76,8 @@
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/is_maternal_indicator.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/list_indicator_groups.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/list_outlier_units.html</loc></url>
+<url><loc>https://aphrcwaro.github.io/cd2030.core/reference/list_tracer_vaccines.html</loc></url>
+<url><loc>https://aphrcwaro.github.io/cd2030.core/reference/list_vaccine_indicators.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/load_cache_data.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/load_csection_estimates.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/load_data.html</loc></url>
@@ -116,7 +118,6 @@
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/prepare_population_metrics.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/prepare_private_sector_plot_data.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/print.cd_data.html</loc></url>
-<url><loc>https://aphrcwaro.github.io/cd2030.core/reference/print_notes.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/register_indicator_group.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/reset_indicator_group.html</loc></url>
 <url><loc>https://aphrcwaro.github.io/cd2030.core/reference/robust_max.html</loc></url>
