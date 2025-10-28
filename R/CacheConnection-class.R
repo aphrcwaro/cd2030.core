@@ -566,7 +566,7 @@ CacheConnection <- R6::R6Class(
       }
       return(years)
     },
-    #' @field data_years Get countdown data.
+    #' @field subnational_regions Get countdown data.
     subnational_regions = function(value) {
       regions <- private$getter('subnational_regions', value)
       if (is.null(regions)) {

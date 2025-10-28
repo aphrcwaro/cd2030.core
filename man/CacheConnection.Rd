@@ -23,6 +23,10 @@ from \code{.rds} files.
 
 \item{\code{countdown_data}}{Get countdown data.}
 
+\item{\code{data_years}}{Get countdown data.}
+
+\item{\code{subnational_regions}}{Get countdown data.}
+
 \item{\code{country}}{Get country name.}
 
 \item{\code{country_iso}}{Get country ISO3 code.}
@@ -40,6 +44,12 @@ from \code{.rds} files.
 \item{\code{k_factors}}{Gets k-factors.}
 
 \item{\code{adjusted_flag}}{Gets adjusted flag.}
+
+\item{\code{derivation_population}}{Gets adjusted flag.}
+
+\item{\code{indicator_coverage_national}}{Gets adjusted data.}
+
+\item{\code{indicator_coverage_admin1}}{Gets adjusted data.}
 
 \item{\code{survey_estimates}}{Gets survey estimates.}
 
@@ -114,9 +124,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-new}{\code{CacheConnection$new()}}
 \item \href{#method-CacheConnection-load_from_disk}{\code{CacheConnection$load_from_disk()}}
 \item \href{#method-CacheConnection-save_to_disk}{\code{CacheConnection$save_to_disk()}}
-\item \href{#method-CacheConnection-append_page_note}{\code{CacheConnection$append_page_note()}}
 \item \href{#method-CacheConnection-adjust_data}{\code{CacheConnection$adjust_data()}}
-\item \href{#method-CacheConnection-get_notes}{\code{CacheConnection$get_notes()}}
 \item \href{#method-CacheConnection-calculate_indicator_coverage}{\code{CacheConnection$calculate_indicator_coverage()}}
 \item \href{#method-CacheConnection-calculate_inequality}{\code{CacheConnection$calculate_inequality()}}
 \item \href{#method-CacheConnection-calculate_coverage}{\code{CacheConnection$calculate_coverage()}}
@@ -140,6 +148,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-set_k_factors}{\code{CacheConnection$set_k_factors()}}
 \item \href{#method-CacheConnection-set_adjusted_flag}{\code{CacheConnection$set_adjusted_flag()}}
 \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
+\item \href{#method-CacheConnection-set_derivation_population}{\code{CacheConnection$set_derivation_population()}}
 \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
 \item \href{#method-CacheConnection-set_survey_source}{\code{CacheConnection$set_survey_source()}}
 \item \href{#method-CacheConnection-set_survey_year}{\code{CacheConnection$set_survey_year()}}
@@ -215,43 +224,6 @@ None. Updates file.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-append_page_note"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-append_page_note}{}}}
-\subsection{Method \code{append_page_note()}}{
-Append a note to a page.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$append_page_note(
-  page_id,
-  object_id,
-  note,
-  parameters = list(),
-  include_in_report = FALSE,
-  include_plot_table = FALSE,
-  single_entry = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{page_id}}{Page ID.}
-
-\item{\code{object_id}}{Object ID.}
-
-\item{\code{note}}{Note text.}
-
-\item{\code{parameters}}{Named list of parameters.}
-
-\item{\code{include_in_report}}{Logical flag.}
-
-\item{\code{include_plot_table}}{Logical flag.}
-
-\item{\code{single_entry}}{Logical flag for uniqueness.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-adjust_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-adjust_data}{}}}
 \subsection{Method \code{adjust_data()}}{
@@ -260,27 +232,6 @@ Adjusts data.
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$adjust_data()}\if{html}{\out{</div>}}
 }
 
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_notes"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_notes}{}}}
-\subsection{Method \code{get_notes()}}{
-Retrieve notes for a given page/object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_notes(page_id, object_id = NULL, parameters = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{page_id}}{Page ID.}
-
-\item{\code{object_id}}{Object ID.}
-
-\item{\code{parameters}}{Named list of parameters.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_indicator_coverage"></a>}}
@@ -661,6 +612,23 @@ Set survey estimates.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{Named numeric vector.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_derivation_population"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_derivation_population}{}}}
+\subsection{Method \code{set_derivation_population()}}{
+Set national estimates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_derivation_population(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Named list.}
 }
 \if{html}{\out{</div>}}
 }
