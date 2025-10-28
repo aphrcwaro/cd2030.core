@@ -5,15 +5,17 @@
 #'
 #' @param rds_path Optional character. Path to an RDS file to load the cache from.
 #' @param countdown_data Optional `cd_data` object to initialize in-memory cache.
+#' @param data_path Optional. Used with the countdown to support in creating the cache file.
 #'
 #' @return An instance of the `CacheConnection` class.
 #'
 #' @export
-init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, indicator_group = c('auto', 'rmncah', 'vaccine', 'custom')) {
+init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_path = NULL, indicator_group = c('auto', 'rmncah', 'vaccine', 'custom')) {
   indicator_group <- arg_match(indicator_group)
   cache <- CacheConnection$new(
     rds_path = rds_path,
-    countdown_data = countdown_data
+    countdown_data = countdown_data,
+    data_path = data_path
   )
 
   profile <- attr_or_null(cache$countdown_data, 'profile')
@@ -55,7 +57,8 @@ CacheConnection <- R6::R6Class(
     #' @description Initialize a CacheConnection instance.
     #' @param rds_path Path to the RDS file (can be NULL).
     #' @param countdown_data Countdown data of class `cd_data`.
-    initialize = function(rds_path = NULL, countdown_data = NULL) {
+    #' @param data_path Directory to store the cache
+    initialize = function(rds_path = NULL, countdown_data = NULL, data_path = NULL) {
       if (is.null(rds_path) && is.null(countdown_data)) {
         cd_abort(c('x' = 'Both {.arg rds_path} and {.arg countdown_data} cannot be null.'))
       }
@@ -78,8 +81,14 @@ CacheConnection <- R6::R6Class(
         self$load_from_disk()
       }
 
-      if (private$.in_memory_data$adjusted_flag && is.null(private$.in_memory_data$adjusted_data)) {
-
+      if (!is.null(countdown_data) && !is.null(data_path)) {
+        tryCatch({
+          self$set_cache_path(file.path(data_path, paste0(self$country, '_', format(Sys.time(), '%Y%m%d%H%M'), '.rds')))
+        },
+        error = function(e) {
+          error_message <- clean_error_message(e)
+          cd_warn(c('!' = error_message))
+        })
       }
     },
 
@@ -354,6 +363,7 @@ CacheConnection <- R6::R6Class(
       if (path_set) {
         private$.has_changed <- TRUE
         self$save_to_disk()
+        cd_info(c('i' = str_glue('Successfully saved to {.val value}.')))
       }
     },
 

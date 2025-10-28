@@ -4,24 +4,13 @@
 \alias{get_mapping_data}
 \title{Get Mapping Data for Subnational Coverage Analysis}
 \usage{
-get_mapping_data(
-  .data,
-  admin_level = c("adminlevel_1", "district"),
-  un_estimates = NULL,
-  sbr = 0.02,
-  nmr = 0.025,
-  pnmr = 0.024,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  survey_year = 2019,
-  twin = 0.015,
-  preg_loss = 0.03,
-  subnational_map = NULL
-)
+get_mapping_data(.data, subnational_map = NULL)
 }
 \arguments{
 \item{.data}{A data frame of input data containing model output or estimates.
 Must include metadata attribute \code{iso3} (ISO3 country code).}
+
+\item{subnational_map}{Optional. A data frame to join with the shapefile to add metadata.}
 
 \item{admin_level}{Character. The subnational level of analysis.
 Must be one of \code{"adminlevel_1"} (default) or \code{"district"}.}
@@ -43,8 +32,6 @@ Must be one of \code{"adminlevel_1"} (default) or \code{"district"}.}
 \item{twin}{Numeric. Twin birth rate. Default = \code{0.015}.}
 
 \item{preg_loss}{Numeric. Pregnancy loss rate. Default = \code{0.03}.}
-
-\item{subnational_map}{Optional. A data frame to join with the shapefile to add metadata.}
 }
 \value{
 A \code{tibble} of class \code{"cd_mapping"} that combines the input data with shapefile geometries.

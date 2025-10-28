@@ -9,6 +9,7 @@ load_cache_data(
   indicator_group = c("auto", "vaccine", "rmncah", "custom"),
   profile = NULL,
   on_conflict = c("replace", "merge", "error"),
+  create_cache = FALSE,
   start_year = NULL,
   admin_sheet_name = NULL,
   population_sheet_name = NULL,

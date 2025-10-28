@@ -184,7 +184,7 @@ Update a field (with change tracking)}
 \subsection{Method \code{new()}}{
 Initialize a CacheConnection instance.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$new(rds_path = NULL, countdown_data = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$new(rds_path = NULL, countdown_data = NULL, data_path = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -192,7 +192,9 @@ Initialize a CacheConnection instance.
 \describe{
 \item{\code{rds_path}}{Path to the RDS file (can be NULL).}
 
-\item{\code{countdown_data}}{Countdown data of class \code{cd_data}.
+\item{\code{countdown_data}}{Countdown data of class \code{cd_data}.}
+
+\item{\code{data_path}}{Directory to store the cache
 Load data from disk.}
 }
 \if{html}{\out{</div>}}

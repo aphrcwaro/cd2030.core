@@ -247,6 +247,8 @@ reference:
       - get_named_indicators
       - get_population_column
       - get_analysis_indicators
+      - list_tracer_vaccines
+      - list_vaccine_indicators
       - get_admin_columns
       - get_plot_admin_column
       - is_maternal_indicator
