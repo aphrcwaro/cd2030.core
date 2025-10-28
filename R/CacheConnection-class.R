@@ -27,7 +27,7 @@ init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, indicat
   resolved_group <- attr_or_null(cache$countdown_data, 'indicator_group')
   if (is.null(resolved_group)) {
     cols <- colnames(cache$countdown_data)
-    resolved_group <- resolve_indicator_group(cols, indicator_group)
+    resolved_group <- resolve_indicator_group(cols, indicator_group, profile)
   }
 
   check_required_columns_exist(cache$countdown_data, resolved_group)
