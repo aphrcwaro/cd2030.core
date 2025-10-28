@@ -116,7 +116,7 @@ filter_mapping_data <- function(.data,
                                 plot_year = NULL) {
   check_cd_mapping(.data)
 
-  indicator <- arg_match(indicator, get_indicator_without_opd_ipd())
+  indicator <- arg_match(indicator, get_analysis_indicators())
   denominator <- arg_match(denominator)
   palette <- arg_match(palette)
 

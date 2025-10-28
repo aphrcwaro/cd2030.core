@@ -181,7 +181,7 @@ filter_inequality <- function(.data,
   admin_level <- attr_or_abort(.data, "admin_level")
   region <- attr_or_null(.data, 'region')
 
-  indicator <- arg_match(indicator, get_all_indicators())
+  indicator <- arg_match(indicator, get_analysis_indicators())
   denominator <- arg_match(denominator)
 
   pop_col <- get_population_column(indicator, denominator)

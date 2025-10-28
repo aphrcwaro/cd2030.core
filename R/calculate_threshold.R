@@ -102,7 +102,7 @@ filter_high_performers <- function(.data,
                                    denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                                    threshold = 90) {
   check_cd_indicator_coverage(.data)
-  indicator <- arg_match(indicator, get_indicator_without_opd_ipd())
+  indicator <- arg_match(indicator, get_analysis_indicators())
   denominator <- arg_match(denominator)
 
   column <- paste0('cov_', indicator, '_', denominator)

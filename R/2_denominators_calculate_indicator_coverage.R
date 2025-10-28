@@ -112,7 +112,7 @@ calculate_indicator_coverage <- function(.data,
 #' @export
 filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88, survey_year = 2024) {
   check_cd_indicator_coverage(.data)
-  indicator <- arg_match(indicator, get_indicator_without_opd_ipd())
+  indicator <- arg_match(indicator, get_analysis_indicators())
 
   if (!is_scalar_double(survey_coverage)) {
     cd_abort(c("x" = "A scalar numeric is required."))
