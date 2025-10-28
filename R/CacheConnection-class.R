@@ -459,7 +459,7 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set mapping years.
     #' @param value Integer vector.
-    set_mapping_years = function(value) private$setter('selected_mapping_years', value, is_numeric),
+    set_mapping_years = function(value) private$setter('selected_mapping_years', value, is.numeric),
 
     #' @description Set mapping years.
     #' @param value Integer vector.
@@ -467,7 +467,7 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set mapping years.
     #' @param value Integer vector.
-    set_utilization_mapping_years = function(value) private$setter('selected_utilization_mapping_years', value, is_numeric),
+    set_utilization_mapping_years = function(value) private$setter('selected_utilization_mapping_years', value, is.numeric),
 
     #' @description Set FPET data.
     #' @param value Data frame.
