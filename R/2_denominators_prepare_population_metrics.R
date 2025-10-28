@@ -81,9 +81,9 @@ prepare_population_metrics <- function(.data,
     distinct(district, adminlevel_1, year, .keep_all = TRUE) %>%
     mutate(
       totpop_dhis2 = sum(pop_dhis2, na.rm = TRUE) / 1000,
-      totbirths_dhis2 = sum(allbirths_dhis2, na.rm = TRUE),
+      totbirths_dhis2 = sum(allbirths_dhis2, na.rm = TRUE) / 1000,
       totlivebirths_dhis2 = sum(livebirths_dhis2, na.rm = TRUE) / 1000,
-      totunder1_dhis2 = sum(under1_dhis2, na.rm = TRUE),
+      totunder1_dhis2 = sum(under1_dhis2, na.rm = TRUE) / 1000,
       .by = all_of(group_vars)
     ) %>%
     summarise(
